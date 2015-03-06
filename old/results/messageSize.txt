@@ -1,0 +1,100 @@
+netperf -P 0 -I 99,5 -i 8,12 -l 30 -H cold03 -- -m 32768
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 40.822%
+!!!                       Local CPU util  : 0.000%
+!!!                       Remote CPU util : 0.000%
+
+30000000 30000000  32768    30.92     275.54   
+netperf -P 0 -I 99,5 -i 8,12 -l 30 -H cold03 -- -m 65536
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 22.976%
+!!!                       Local CPU util  : 0.000%
+!!!                       Remote CPU util : 0.000%
+
+30000000 30000000  65536    30.68     286.69   
+netperf -P 0 -I 99,5 -i 8,12 -l 30 -H cold03 -- -m 131072
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 48.243%
+!!!                       Local CPU util  : 0.000%
+!!!                       Remote CPU util : 0.000%
+
+30000000 30000000 131072    30.90     272.25   
+netperf -P 0 -I 99,5 -i 8,12 -l 30 -H cold03 -- -m 262144
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 47.895%
+!!!                       Local CPU util  : 0.000%
+!!!                       Remote CPU util : 0.000%
+
+30000000 30000000 262144    30.80     282.14   
+netperf -P 0 -I 99,5 -i 8,12 -l 30 -H cold03 -- -m 524288
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 38.259%
+!!!                       Local CPU util  : 0.000%
+!!!                       Remote CPU util : 0.000%
+
+30000000 30000000 524288    30.80     307.39   
+netperf -P 0 -I 99,5 -i 8,12 -l 30 -H cold03 -- -m 1048576
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 39.726%
+!!!                       Local CPU util  : 0.000%
+!!!                       Remote CPU util : 0.000%
+
+30000000 30000000 1048576    30.66     303.83   
+netperf -P 0 -I 99,5 -i 8,12 -l 30 -H cold03 -- -m 2097152
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 56.736%
+!!!                       Local CPU util  : 0.000%
+!!!                       Remote CPU util : 0.000%
+
+30000000 30000000 2097152    30.72     292.23   
+netperf -P 0 -I 99,5 -i 8,12 -l 30 -H cold03 -- -m 4194304
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 30.311%
+!!!                       Local CPU util  : 0.000%
+!!!                       Remote CPU util : 0.000%
+
+30000000 30000000 4194304    30.94     265.50   
+netperf -P 0 -I 99,5 -i 8,12 -l 30 -H cold03 -- -m 8388608
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 34.355%
+!!!                       Local CPU util  : 0.000%
+!!!                       Remote CPU util : 0.000%
+
+30000000 30000000 8388608    30.67     302.34   
+netperf -P 0 -I 99,5 -i 8,12 -l 30 -H cold03 -- -m 16777216
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 54.184%
+!!!                       Local CPU util  : 0.000%
+!!!                       Remote CPU util : 0.000%
+
+30000000 30000000 16777216    30.75     237.33   

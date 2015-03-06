@@ -1,0 +1,50 @@
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -- -m 2
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 0.173%
+!!!                       Local CPU util  : 0.236%
+!!!                       Remote CPU util : 8.721%
+
+ 87380 30000000      2    30.00        50.83   12.54    1.17     161.654  7.533  
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -- -m 4
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 0.346%
+!!!                       Local CPU util  : 0.151%
+!!!                       Remote CPU util : 5.770%
+
+ 87380 30000000      4    30.00        99.57   12.55    1.35     82.605  4.428  
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -- -m 8
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 0.400%
+!!!                       Local CPU util  : 0.134%
+!!!                       Remote CPU util : 6.960%
+
+ 87380 30000000      8    30.00       190.15   12.54    2.21     43.215  3.814  
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -- -m 16
+ 87380 30000000     16    30.00       359.42   12.53    3.89     22.852  3.544  
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -- -m 32
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 0.264%
+!!!                       Local CPU util  : 0.138%
+!!!                       Remote CPU util : 10.729%
+
+ 87380 30000000     32    30.00       666.92   12.52    5.15     12.302  2.532  
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -- -m 64
+ 87380 30000000     64    30.08       941.45   12.27    4.98     8.541   1.735  
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -- -m 128
+ 87380 30000000    128    30.08       941.44   8.25     4.45     5.744   1.550  
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -- -m 256
+ 87380 30000000    256    30.08       941.43   5.64     4.22     3.925   1.467  
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -- -m 512
+ 87380 30000000    512    30.08       941.43   4.28     4.10     2.979   1.427  

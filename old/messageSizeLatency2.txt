@@ -1,0 +1,168 @@
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 2
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 1.140%
+!!!                       Local CPU util  : 7.630%
+!!!                       Remote CPU util : 9.469%
+
+30000000 30000000 2       2      30.00   7360.68  1.71   2.12   18.587  11.499 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 4
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 1.549%
+!!!                       Local CPU util  : 5.961%
+!!!                       Remote CPU util : 11.075%
+
+30000000 30000000 4       4      30.00   7369.30  1.68   2.21   18.211  12.009 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 8
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 0.880%
+!!!                       Local CPU util  : 9.392%
+!!!                       Remote CPU util : 5.585%
+
+30000000 30000000 8       8      30.00   7348.70  1.61   2.26   17.546  12.325 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 16
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 1.331%
+!!!                       Local CPU util  : 11.493%
+!!!                       Remote CPU util : 15.175%
+
+30000000 30000000 16      16     30.00   7305.26  1.66   2.29   18.191  12.512 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 32
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 1.623%
+!!!                       Local CPU util  : 8.152%
+!!!                       Remote CPU util : 7.660%
+
+30000000 30000000 32      32     30.00   7226.00  1.58   2.10   17.534  11.636 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 64
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 0.539%
+!!!                       Local CPU util  : 11.183%
+!!!                       Remote CPU util : 9.378%
+
+30000000 30000000 64      64     30.00   3053.36  0.75   1.00   19.627  13.161 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 128
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 0.108%
+!!!                       Local CPU util  : 12.697%
+!!!                       Remote CPU util : 7.788%
+
+30000000 30000000 128     128    30.00   3011.02  0.66   1.12   17.461  14.836 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 256
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 0.070%
+!!!                       Local CPU util  : 7.150%
+!!!                       Remote CPU util : 8.859%
+
+30000000 30000000 256     256    30.00   2991.18  0.60   1.03   16.148  13.721 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 512
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 0.172%
+!!!                       Local CPU util  : 5.561%
+!!!                       Remote CPU util : 4.741%
+
+30000000 30000000 512     512    30.00   2930.60  0.65   0.93   17.732  12.762 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 1024
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 0.094%
+!!!                       Local CPU util  : 6.568%
+!!!                       Remote CPU util : 6.343%
+
+30000000 30000000 1024    1024   30.00   2429.61  0.56   0.84   18.425  13.846 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 2048
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 4.267%
+!!!                       Local CPU util  : 5.512%
+!!!                       Remote CPU util : 7.621%
+
+30000000 30000000 2048    2048   30.00   4014.93  1.68   2.56   33.495  25.525 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 4096
+!!! WARNING
+!!! Desired confidence was not achieved within the specified iterations.
+!!! This implies that there was variability in the test environment that
+!!! must be investigated before going further.
+!!! Confidence intervals: Throughput      : 4.229%
+!!!                       Local CPU util  : 15.416%
+!!!                       Remote CPU util : 6.495%
+
+30000000 30000000 4096    4096   30.00   2253.42  1.07   1.91   37.919  33.912 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 8192
+30000000 30000000 8192    8192   30.00   2037.25  1.45   3.02   56.902  59.333 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 16384
+30000000 30000000 16384   16384  30.00   2115.91  2.47   5.45   93.553  103.003 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 32768
+30000000 30000000 32768   32768  30.00   1189.54  2.78   5.71   186.864  192.054 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 65536
+30000000 30000000 65536   65536  30.00   660.86  2.72   6.72   329.127  406.608 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 131072
+30000000 30000000 131072  131072 30.00   401.58  3.49   9.00   694.915  896.334 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 262144
+30000000 30000000 262144  262144 30.00   215.47  3.95   10.40  1467.677  1931.472 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 524288
+30000000 30000000 524288  524288 30.00   108.83  4.14   12.01  3041.547  4413.607 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 1048576
+30000000 30000000 1048576  1048576 30.00   54.91   4.55   13.17  6636.141  9593.408 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 2097152
+30000000 30000000 2097152  2097152 30.01   27.16   4.95   13.51  14581.920  19894.990 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 4194304
+30000000 30000000 4194304  4194304 30.02   13.29   4.84   12.65  29155.250  38073.570 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 8388608
+30000000 30000000 8388608  8388608 30.04   6.62    4.76   11.44  57439.188  69083.984 
+65536  87380 
+netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_RR -- -r 16777216
+30000000 30000000 16777216  16777216 30.07   3.35    4.52   10.78  107963.641  128816.250 
+65536  87380 
