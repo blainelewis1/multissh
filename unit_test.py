@@ -2,7 +2,7 @@
 
 from header import Header 
 import worker 
-import launcher 
+import launcher as launch
 
 import os
 
@@ -37,8 +37,8 @@ def test_worker():
 
 	pid = os.fork()
 	if pid == 0:
-		left_read = open(LEFT_WORKER_READ, "r")
-		left_write = open(LEFT_WORKER_WRITE, "w")
+		left_read = open(LEFT_WORKER_READ, "rb")
+		left_write = open(LEFT_WORKER_WRITE, "wb")
 		
 		left_worker = worker.Worker(1, left_read, left_write)
 		
@@ -46,8 +46,8 @@ def test_worker():
 	else:
 		pid = os.fork()
 		if pid == 0:
-			right_write = open(LEFT_WORKER_READ, "w")
-			right_read = open(LEFT_WORKER_WRITE, "r")
+			right_write = open(LEFT_WORKER_READ, "wb")
+			right_read = open(LEFT_WORKER_WRITE, "rb")
 
 			right_worker = worker.Worker(2, right_read, right_write)
 			
@@ -82,38 +82,44 @@ def test_worker():
 				pass
 
 
-			left_multi_read = open(left_multi_read, "r")
-			left_multi_write = open(left_multi_write, "w")
-			right_multi_read = open(right_multi_read, "r")
-			right_multi_write = open(right_multi_write, "w")
+			left_multi_read = open(left_multi_read, "rb")
+			left_multi_write = open(left_multi_write, "wb")
+			right_multi_read = open(right_multi_read, "rb")
+			right_multi_write = open(right_multi_write, "wb")
 
+			# left_multi_read = left_multi_read.buffer
+			# left_multi_write = left_multi_write.buffer
+			# right_multi_read = right_multi_read.buffer
+			# right_multi_write = right_multi_write.buffer
+			
+			to_send = bytes("helloworld\n", 'UTF-8')
 
-			string = "helloworld\n"
 
 			header = Header()
 			header.sequence_number = 1
-			header.size = len(string)
+			header.size = len(to_send)
 
 
-			left_multi_write.write(header.to_string() + string)
+
+			left_multi_write.write(b''.join([header.to_bytes(), to_send]))
 			left_multi_write.flush()
 
-			assert(right_multi_read.readline() == header.to_string())
-			assert(right_multi_read.readline() == string)
+			assert(right_multi_read.readline() == header.to_bytes())
+			assert(right_multi_read.readline() == to_send)
 
-			right_multi_write.write(header.to_string() + string)
+			right_multi_write.write(b''.join([header.to_bytes(), to_send]))
 			right_multi_write.flush()
 
-			assert(left_multi_read.readline() == header.to_string())
-			assert(left_multi_read.readline() == string)
+			assert(left_multi_read.readline() == header.to_bytes())
+			assert(left_multi_read.readline() == to_send)
 			
 			os.unlink(LEFT_WORKER_WRITE)
 			os.unlink(LEFT_WORKER_READ)
 
 def test_launcher():
-	
-	args = launcher.Launcher.EXECUTABLE_PATH
-	launchme = launcher.Launcher(args)
+
+	args = launch.Launcher.EXECUTABLE_PATH
+	launchme = launch.Launcher(args)
 	print(launchme.launch())
 
 

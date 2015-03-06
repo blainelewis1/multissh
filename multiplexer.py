@@ -3,6 +3,7 @@ import launcher as launch
 import subprocess
 import select
 import os
+from header import Header
 
 class Multiplexer:
 	INIT_WORKERS = 5
@@ -15,8 +16,6 @@ class Multiplexer:
 		self.send_index = 0
 		self.receive_sequence = 0
 		self.send_sequence = 0
-
-
 
 		self.poll = select.poll()
 		self.poll.register(target_out, select.POLLIN)
@@ -33,8 +32,8 @@ class Multiplexer:
 		header = Header()
 		header.init = True
 
-		workers[0][0].write(header.to_string())
-		workers[0][0].flush()
+		self.workers[0][0].write(header.to_string())
+		self.workers[0][0].flush()
 
 	def create_worker(self):
 		#spawn process
@@ -44,7 +43,7 @@ class Multiplexer:
 		launcher.id = len(self.workers)
 		launcher.execute()
 
-		connect_to_worker(len(self.workers))
+		self.connect_to_worker(len(self.workers))
 
 	def connect_to_worker(self, ID):
 		read_path = worker.Worker.get_write_path(ID)
@@ -66,7 +65,7 @@ class Multiplexer:
 		worker_out = open(read_path, "r")
 		worker_in = open(write_path, "w")
 
-		workers.append([(worker_in, worker_out)])
+		self.workers.append((worker_in, worker_out))
 
 
 	def poll(self):

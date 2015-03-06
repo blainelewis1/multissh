@@ -27,11 +27,11 @@ class Worker:
 	
 	@staticmethod
 	def get_write_path(ID):
-		return Worker.WRITE_PATH + ID + ".fifo"
+		return Worker.WRITE_PATH + str(ID) + ".fifo"
 
 	@staticmethod
 	def get_read_path(ID):
-		return Worker.READ_PATH + ID + ".fifo"
+		return Worker.READ_PATH + str(ID) + ".fifo"
 
 	def __init__(self, ID, opposing_out, opposing_in):
 
@@ -60,18 +60,24 @@ class Worker:
 
 		#CAUTION this will deadlock as the read or write
 		#side actually blocks until the other end is opened
-		self.multiplexer_in = open(write_path, "w")
-		self.multiplexer_out = open(read_path, "r")
+		self.multiplexer_in = open(write_path, "wb")
+		self.multiplexer_out = open(read_path, "rb")
 
 	def delete_fifos(self):
 		write_path = Worker.get_write_path(self.ID)
 		read_path = Worker.get_read_path(self.ID)
 
-		os.unlink(write_path)
-		os.unlink(read_path)
+		try:
+			os.unlink(write_path)
+		except FileNotFoundError:
+			pass
+		try:
+			os.unlink(read_path)
+		except FileNotFoundError:
+			pass
 
 	def send(self, header):
-		self.opposing_in.write(header.to_string())
+		self.opposing_in.write(header.to_bytes())
 
 		if header.size != 0:
 			data = self.multiplexer_out.read(header.size)
@@ -80,7 +86,8 @@ class Worker:
 		self.opposing_in.flush()
 
 	def receive(self, header):
-		self.multiplexer_in.write(header.to_string())
+
+		self.multiplexer_in.write(header.to_bytes())
 
 		if header.size != 0:
 			data = self.opposing_out.read(header.size)
@@ -96,6 +103,7 @@ class Worker:
 		poll = select.poll()
 		poll.register(self.multiplexer_out, select.POLLIN)
 		poll.register(self.opposing_out, select.POLLIN)
+
 
 		while(True):
 
@@ -136,7 +144,7 @@ class Worker:
 
 		if header.init:
 			#TODO: this won't work
-			launcher = launcher.Launcher()
+			launcher = launch.Launcher()
 			launcher.execute_remote_multiplexer()
 			return None
 

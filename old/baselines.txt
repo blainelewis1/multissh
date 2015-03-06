@@ -1,5 +1,0 @@
-netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_SENDFILE
-netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t TCP_STREAM
- 87380 30000000 30000000    30.08       941.04   2.90     4.03     2.028   1.413  
-netperf -P 0 -I 99,5 -i 12,8 -l 30 -H cold07 -c -C -t UDP_STREAM
-recv_response_timed_n: no response received. errno 0 counter 0

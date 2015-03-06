@@ -24,7 +24,9 @@ class Header:
 		if(header == None):
 			return
 
-		header = header.strip()
+		header = header.decode("UTF-8").strip()
+
+		print(header)
 
 		tokens = header.split(Header.PAIR_DELIMITER)
 
@@ -40,7 +42,7 @@ class Header:
 			elif(key == Header.SIZE):
 				self.size = int(value)
 			elif(key == Header.INIT):
-				self.create = value == "True"
+				self.init = value == "True"
 			elif(key == Header.CREATE):
 				self.create = int(value)
 			else:
@@ -58,13 +60,11 @@ class Header:
 			pairs.append(self.join_pair(Header.SEQUENCE_NUMBER, str(self.sequence_number)))
 		if(self.init):
 			pairs.append(self.join_pair(Header.INIT, str(self.init)))
-
 		if(self.create):
 			pairs.append(self.join_pair(Header.CREATE, str(self.create)))
 
 		return  Header.PAIR_DELIMITER.join(pairs) + "\n"
 
 
-
-
-
+	def to_bytes(self):
+		return bytes(self.to_string(), 'UTF-8')
