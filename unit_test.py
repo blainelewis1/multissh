@@ -119,10 +119,13 @@ def test_worker():
 def test_launcher():
 
 	args = launch.Launcher.EXECUTABLE_PATH
-	launchme = launch.Launcher(args)
-	print(launchme.launch())
+	launcher = launch.Launcher(args)
+	multiplexer = launcher.launch()
+	multiplexer.poll()
+
 
 
 test_header()
 test_worker()
 test_launcher()
+

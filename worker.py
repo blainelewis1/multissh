@@ -4,7 +4,7 @@ import sys
 import select
 import os
 from header import Header
-import launcher
+import launcher as launch
 
 #   Record the time between polls and assume it along 
 #   with the incoming is throughput in order to create
@@ -131,6 +131,7 @@ class Worker:
 						sys.exit(0)
 						
 	def handle_header(self, line):
+		print(line)
 		if not line:
 			sys.exit(0)
 

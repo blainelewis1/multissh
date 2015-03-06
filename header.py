@@ -18,15 +18,11 @@ class Header:
 		self.valid = True
 		self.create = 0
 		self.init = False
-
-		#self.close = False
 		
 		if(header == None):
 			return
 
 		header = header.decode("UTF-8").strip()
-
-		print(header)
 
 		tokens = header.split(Header.PAIR_DELIMITER)
 

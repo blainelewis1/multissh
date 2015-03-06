@@ -10,6 +10,8 @@ class Multiplexer:
 	MAX_READ_SIZE = 2048
 
 	def __init__(self, target_out, target_in):
+		print(target_out)
+
 		self.workers = []
 		self.target_in = target_in
 		self.target_out = target_out
@@ -17,11 +19,10 @@ class Multiplexer:
 		self.receive_sequence = 0
 		self.send_sequence = 0
 
-		self.poll = select.poll()
-		self.poll.register(target_out, select.POLLIN)
+		self.poller = select.poll()
+		self.poller.register(target_out, select.POLLIN)
 
 	def init_multiplexer(self):
-
 		for i in range(Multiplexer.INIT_WORKERS):
 			self.create_worker()
 
@@ -32,7 +33,7 @@ class Multiplexer:
 		header = Header()
 		header.init = True
 
-		self.workers[0][0].write(header.to_string())
+		self.workers[0][0].write(header.to_bytes())
 		self.workers[0][0].flush()
 
 	def create_worker(self):
@@ -62,8 +63,10 @@ class Multiplexer:
 		#CAUTION this will deadlock as the read or write
 		#side actually blocks until the other end is opened
 		#So it must be the opposite of the worker
-		worker_out = open(read_path, "r")
-		worker_in = open(write_path, "w")
+		worker_out = open(read_path, "rb")
+		worker_in = open(write_path, "wb")
+
+		self.poller.register(worker_out)
 
 		self.workers.append((worker_in, worker_out))
 
@@ -71,7 +74,7 @@ class Multiplexer:
 	def poll(self):
 		
 		while(True):
-			vals = self.poll.poll()
+			vals = self.poller.poll()
 			for fd, event in vals:
 				if(fd == self.target_out):
 					if(event & select.POLLIN):
@@ -101,11 +104,3 @@ class Multiplexer:
 		#TODO: weight this
 		self.sendIndex = 1 + self.sendIndex % len(self.workers)
 		self.send_sequence = self.send_sequence + 1
-
-
-
-
-
-
-
-

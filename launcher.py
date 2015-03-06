@@ -46,7 +46,6 @@ class Launcher:
 			if self.worker:
 				obj = worker.Worker(self.id, sys.stdin.buffer, sys.stdout.buffer)
 			else:
-				#multiplexer.Multiplexer
 				target_out, target_in  = self.open_remote_target()
 				obj = multiplexer.Multiplexer(target_out, target_in)				
 				
@@ -64,11 +63,11 @@ class Launcher:
 
 	def open_remote_target(self):
 		#TODO: these are mocks atm
-		return (open("test.in", "r"), open("test.out", "w"))
+		return (open("/home/blaine1/C496/test/test.in", "rb"), open("/home/blaine1/C496/test/test.out", "wb"))
 
 	def execute_remote_worker(self):
-		print(Launcher.original_args)
-		args = Launcher.original_args + [Launcher.REMOTE]
+		args = ["ssh", "127.0.0.1"] + Launcher.original_args + [Launcher.REMOTE]
+		
 		worker = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 		
 		return (worker.stdout, worker.stdin)
@@ -82,17 +81,17 @@ class Launcher:
 			args += " " + Launcher.REMOTE
 		return args
 
-	def execute_remote_multiplexer(self):
-		launcher = Launcher()
-		launcher.remote = True
-		#TODO: this this this!!
 
-	def launch_worker(self):
-		pass
+	def execute_remote_multiplexer(self):
+		print("dat remote!!")
+
+		args = Launcher.EXECUTABLE_PATH + " " + Launcher.REMOTE
+
+		subprocess.Popen(shlex.split(args))
 
 	def execute(self):
+
 		args = self.construct_args()
-		print(args)
 
 		subprocess.Popen(shlex.split(args))
 		if self.worker:
