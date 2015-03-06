@@ -21,7 +21,7 @@ class Launcher:
 	REMOTE = "--remote"
 	WORKER = "--worker"
 	EXECUTABLE_PATH = "/home/blaine1/C496/launcher.py"
-	ID = "-id"
+	ID_STRING = "-id"
 
 	def __init__(self, args=None):
 		self.remote = False
@@ -38,13 +38,14 @@ class Launcher:
 		self.worker = Launcher.WORKER in  args
 
 		if(self.worker):
-			self.id = int(args[args.index(Launcher.ID) + 1])
+			print(args)
+			self.ID = int(args[args.index(Launcher.ID_STRING) + 1])
 
 	def launch(self):
 		obj = None
 		if self.remote:
 			if self.worker:
-				obj = worker.Worker(self.id, sys.stdin.buffer, sys.stdout.buffer)
+				obj = worker.Worker(self.ID, sys.stdin.buffer, sys.stdout.buffer)
 			else:
 				target_out, target_in  = self.open_remote_target()
 				obj = multiplexer.Multiplexer(target_out, target_in)				
@@ -53,7 +54,7 @@ class Launcher:
 			if self.worker:
 				#do the ssh thinger
 				worker_out, worker_in = self.execute_remote_worker()
-				obj = worker.Worker(self.id, worker_out, worker_in)
+				obj = worker.Worker(self.ID, worker_out, worker_in)
 			else:
 				#this is a local multiplexer
 				obj = multiplexer.Multiplexer(sys.stdin.buffer, sys.stdout.buffer)
@@ -76,16 +77,14 @@ class Launcher:
 		#TODO: executable path is a poor way to do that
 		args = Launcher.EXECUTABLE_PATH
 		if self.worker: 
-			args += " " + Launcher.WORKER + " " + Launcher.ID + " " + str(self.id)
+			args += " " + Launcher.WORKER + " " + Launcher.ID_STRING + " " + str(self.ID)
 		if self.remote:
 			args += " " + Launcher.REMOTE
 		return args
 
 
 	def execute_remote_multiplexer(self):
-		print("dat remote!!")
-
-		args = Launcher.EXECUTABLE_PATH + " " + Launcher.REMOTE
+		args = Launcher.EXECUTABLE_PATH + " " + Launcher.REMOTE + " " + Launcher.ID_STRING + " "  + str(self.ID)
 
 		subprocess.Popen(shlex.split(args))
 
@@ -97,7 +96,6 @@ class Launcher:
 		if self.worker:
 			#worker.Workers are executed AND launched from the local side 
 			#TODO: from here we actually need to launch two things. Remote and launch
-
 			pass
 		else:
 			#multiplexer.Multiplexers are only executed from the remote side and 

@@ -76,7 +76,7 @@ class Worker:
 		except FileNotFoundError:
 			pass
 
-	def send(self, header):
+	def send_to_opposing(self, header):
 		self.opposing_in.write(header.to_bytes())
 
 		if header.size != 0:
@@ -85,7 +85,7 @@ class Worker:
 			
 		self.opposing_in.flush()
 
-	def receive(self, header):
+	def send_to_multiplexer(self, header):
 
 		self.multiplexer_in.write(header.to_bytes())
 
@@ -114,7 +114,7 @@ class Worker:
 					if(event & select.POLLIN):
 						header = self.handle_header(self.multiplexer_out.readline())
 						if header:
-							self.send(header)
+							self.send_to_opposing(header)
 					elif(event & (select.POLLHUP | select.POLLERR)):
 						#TODO: what happens if an error occurs
 						self.delete_fifos()
@@ -124,14 +124,13 @@ class Worker:
 					if(event & select.POLLIN):
 						header = self.handle_header(self.opposing_out.readline())
 						if header:
-							self.receive(header)
+							self.send_to_multiplexer(header)
 					elif(event & (select.POLLHUP | select.POLLERR)):
 						#TODO: what happens if an error occurs
 						self.delete_fifos()
 						sys.exit(0)
 						
 	def handle_header(self, line):
-		print(line)
 		if not line:
 			sys.exit(0)
 
@@ -146,6 +145,7 @@ class Worker:
 		if header.init:
 			#TODO: this won't work
 			launcher = launch.Launcher()
+			launcher.ID = self.ID
 			launcher.execute_remote_multiplexer()
 			return None
 

@@ -9,8 +9,8 @@ class Multiplexer:
 	INIT_WORKERS = 5
 	MAX_READ_SIZE = 2048
 
-	def __init__(self, target_out, target_in):
-		print(target_out)
+	def __init__(self, target_out, target_in, ID=None):
+		print(target_in)
 
 		self.workers = []
 		self.target_in = target_in
@@ -21,6 +21,9 @@ class Multiplexer:
 
 		self.poller = select.poll()
 		self.poller.register(target_out, select.POLLIN)
+
+		if ID:
+			self.connect_to_worker(ID)
 
 	def init_multiplexer(self):
 		for i in range(Multiplexer.INIT_WORKERS):
@@ -41,7 +44,7 @@ class Multiplexer:
 
 		launcher = launch.Launcher()
 		launcher.worker = True
-		launcher.id = len(self.workers)
+		launcher.ID = len(self.workers)
 		launcher.execute()
 
 		self.connect_to_worker(len(self.workers))
@@ -72,35 +75,43 @@ class Multiplexer:
 
 
 	def poll(self):
+		print("polling")
 		
 		while(True):
 			vals = self.poller.poll()
+
 			for fd, event in vals:
-				if(fd == self.target_out):
+				if fd == self.target_out.fileno() and len(self.workers) > 0:
 					if(event & select.POLLIN):
 						self.send()	
-					elif(event & (select.POLLHUP | select.POLLERR)):
+					elif event & (select.POLLHUP | select.POLLERR):
 						#TODO: what happens if an error occurs
 						sys.exit(0)
 				else:
-					#TODO: we need to do things here
-					pass
-
+					#This is relatively expensive O(n^2), could use a map
+					for i in range(len(self.workers)):
+						#pull it off!
+						if self.workers[i][1].fileno() == fd:
+							self.receive(i)
 
 	def send(self):
 		#TODO: this will block almost guaranteed
 		data = self.target_out.read(Multiplexer.MAX_READ_SIZE)
 
-		worker = self.workers[self.sendIndex][0]
+		worker = self.workers[self.send_index][0]
 
 		header = Header()
 		header.size = len(data)
 		header.sequence = self.send_sequence
 
-		worker.write(header.to_string())
+		worker.write(header.to_bytes())
 		worker.write(data)
 		worker.flush()
 
 		#TODO: weight this
-		self.sendIndex = 1 + self.sendIndex % len(self.workers)
+		self.send_index = 1 + self.send_index % len(self.workers)
 		self.send_sequence = self.send_sequence + 1
+
+
+	def receive(self, worker_id):
+		worker = worker_id
