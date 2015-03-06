@@ -1,0 +1,2 @@
+SIZE=12&SEQUENCE=23\n
+hello world!
