@@ -81,8 +81,8 @@ class Worker:
 	def send_to_opposing(self, header):
 		self.opposing_in.write(header.to_bytes())
 
-		Log.log("To opposing: ")
-		Log.log(header.to_bytes())
+		#Log.log("To opposing: ")
+		#Log.log(header.to_bytes())
 
 		if header.size != 0:
 			data = self.multiplexer_out.read(header.size)
@@ -94,8 +94,8 @@ class Worker:
 
 		self.multiplexer_in.write(header.to_bytes())
 
-		Log.log("To multiplexer: ")
-		Log.log(header.to_bytes())
+		#Log.log("To multiplexer: ")
+		#Log.log(header.to_bytes())
 
 		if header.size != 0:
 			data = self.opposing_out.read(header.size)
@@ -116,7 +116,7 @@ class Worker:
 
 			vals = poll.poll()
 
-			Log.log(vals)			
+			#Log.log(vals)			
 
 			for fd, event in vals:
 				if(fd == self.multiplexer_out.fileno()):

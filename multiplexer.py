@@ -6,15 +6,13 @@ import os
 from header import Header
 import fcntl
 from logger import Log
+import sys
 
 class Multiplexer:
 	INIT_WORKERS = 5
 	MAX_READ_SIZE = 2048
 
 	def __init__(self, target_out, target_in, ID=None):
-
-		Log.log(target_in)
-
 
 		self.received_packets = dict()
 
@@ -33,8 +31,7 @@ class Multiplexer:
 
 		#TODO: I could initiate worker[0] separately
 
-		if ID:
-			Log.log("YOYOYOY")
+		if ID != None:
 			self.connect_to_worker(ID)
 
 	def init_multiplexer(self):
@@ -86,6 +83,8 @@ class Multiplexer:
 		self.poller.register(worker_out)
 		self.workers.append((worker_in, worker_out))
 
+		Log.log(self.workers)
+
 	def poll(self):
 	
 		while(True):
@@ -111,8 +110,6 @@ class Multiplexer:
 		#TODO: this will block almost guaranteed
 		data = self.target_out.read(Multiplexer.MAX_READ_SIZE)
 
-		print(data)
-
 		worker = self.workers[self.send_index][0]
 
 		header = Header()
@@ -134,37 +131,43 @@ class Multiplexer:
 
 		header = Header(line)
 
+		Log.log(header.to_bytes())
+
 		if not header.valid:
 			return None
 
 		if header.create:
 			self.connect_to_worker(header.create)
+			return None
 
 		return header
 
 	def receive(self, worker_id, header):	
 		#TODO: instrument out of order packets
-		Log.log("receive")
 
-		worker = self.workers[worker_id][0]
+
+		worker = self.workers[worker_id][1]
 
 		data = worker.read(header.size)
 
-		self.received_packets.put(header.sequence_number, data)
+		Log.log(data)
+
+		self.received_packets[header.sequence_number] = data
 
 		self.attempt_receive()
 
 
-	def attempt_send(self):
+	def attempt_receive(self):
 		while True:
-			data = self.received_packets.get(receive_sequence)
+			Log.log("attempting")
+			data = self.received_packets.get(self.receive_sequence)
 
 			if data:
-				target_in.write(data)
-				target_in.flush()
-				del self.received_packets[receive_sequence]
-			else: 
+				self.target_in.write(data)
+				self.target_in.flush()
+				del self.received_packets[self.receive_sequence]
+			else:
 				break
 
-			receive_sequence += 1
+			self.receive_sequence += 1
 

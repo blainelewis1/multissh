@@ -12,8 +12,6 @@ from logger import Log
 def main():
 	launcher = Launcher(sys.argv)
 
-	Log.log(sys.argv)
-
 	launcher.launch().poll()
 	
 	
@@ -100,11 +98,6 @@ class Launcher:
 
 	def execute_remote_multiplexer(self):
 		args = Launcher.EXECUTABLE_PATH + " " + Launcher.REMOTE + " " + Launcher.ID_STRING + " "  + str(self.ID)
-
-		f = open('/home/blaine1/C496/log.txt','a')
-		f.write(str(args) + "\n")
-		f.flush()
-		f.close()
 
 		subprocess.Popen(shlex.split(args))
 
