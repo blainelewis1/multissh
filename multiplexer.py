@@ -4,6 +4,7 @@ import subprocess
 import select
 import os
 from header import Header
+import fcntl
 
 class Multiplexer:
 	INIT_WORKERS = 5
@@ -22,7 +23,11 @@ class Multiplexer:
 		self.poller = select.poll()
 		self.poller.register(target_out, select.POLLIN)
 
+		fl = fcntl.fcntl(target_out, fcntl.F_GETFL)
+		fcntl.fcntl(target_out, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
 		if ID:
+			print("YOYO")
 			self.connect_to_worker(ID)
 
 	def init_multiplexer(self):
@@ -69,20 +74,27 @@ class Multiplexer:
 		worker_out = open(read_path, "rb")
 		worker_in = open(write_path, "wb")
 
-		self.poller.register(worker_out)
+		print(ID)
 
+		self.poller.register(worker_out)
 		self.workers.append((worker_in, worker_out))
 
+
+		print(len(self.workers))
 
 	def poll(self):
 		print("polling")
 		
+		print(self.target_out.fileno())
+
 		while(True):
 			vals = self.poller.poll()
 
 			for fd, event in vals:
+				#print(len(self.workers))
 				if fd == self.target_out.fileno() and len(self.workers) > 0:
 					if(event & select.POLLIN):
+						print("sending")
 						self.send()	
 					elif event & (select.POLLHUP | select.POLLERR):
 						#TODO: what happens if an error occurs
@@ -91,12 +103,16 @@ class Multiplexer:
 					#This is relatively expensive O(n^2), could use a map
 					for i in range(len(self.workers)):
 						#pull it off!
+						print("receiving")
 						if self.workers[i][1].fileno() == fd:
 							self.receive(i)
 
 	def send(self):
 		#TODO: this will block almost guaranteed
+		print("trying to send")
 		data = self.target_out.read(Multiplexer.MAX_READ_SIZE)
+
+		print(data)
 
 		worker = self.workers[self.send_index][0]
 

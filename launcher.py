@@ -38,7 +38,6 @@ class Launcher:
 		self.worker = Launcher.WORKER in  args
 
 		if(self.worker):
-			print(args)
 			self.ID = int(args[args.index(Launcher.ID_STRING) + 1])
 
 	def launch(self):
@@ -67,7 +66,7 @@ class Launcher:
 		return (open("/home/blaine1/C496/test/test.in", "rb"), open("/home/blaine1/C496/test/test.out", "wb"))
 
 	def execute_remote_worker(self):
-		args = ["ssh", "127.0.0.1"] + Launcher.original_args + [Launcher.REMOTE]
+		args = ["ssh", "192.168.163.214"] + Launcher.original_args + [Launcher.REMOTE]
 		
 		worker = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 		
