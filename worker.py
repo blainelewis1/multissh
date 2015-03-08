@@ -86,6 +86,7 @@ class Worker:
 
 		if header.size != 0:
 			data = self.multiplexer_out.read(header.size)
+			Log.log("worker to opposing: " + str(data))
 			self.opposing_in.write(data)
 			
 		self.opposing_in.flush()
@@ -99,6 +100,7 @@ class Worker:
 
 		if header.size != 0:
 			data = self.opposing_out.read(header.size)
+			Log.log("worker to multiplexer: " + str(data))
 			self.multiplexer_in.write(data)
 
 		self.multiplexer_in.flush()

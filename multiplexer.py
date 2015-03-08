@@ -83,8 +83,6 @@ class Multiplexer:
 		self.poller.register(worker_out)
 		self.workers.append((worker_in, worker_out))
 
-		Log.log(self.workers)
-
 	def poll(self):
 	
 		while(True):
@@ -93,7 +91,9 @@ class Multiplexer:
 			for fd, event in vals:
 				if fd == self.target_out.fileno() and len(self.workers) > 0:
 					if(event & select.POLLIN):
-						self.send()	
+						data = self.target_out.read(Multiplexer.MAX_READ_SIZE)
+						if data:
+							self.send(data)		
 					elif event & (select.POLLHUP | select.POLLERR):
 						#TODO: what happens if an error occurs
 						sys.exit(0)
@@ -101,14 +101,16 @@ class Multiplexer:
 					#This is relatively expensive O(n^2), could use a map
 					for i in range(len(self.workers)):
 						#pull it off!
+						Log.log(vals)
 						if self.workers[i][1].fileno() == fd:
 							header = self.handle_header(self.workers[i][1].readline())
 							if header:
 								self.receive(i, header)
 
-	def send(self):
+	def send(self, data):
 		#TODO: this will block almost guaranteed
-		data = self.target_out.read(Multiplexer.MAX_READ_SIZE)
+
+		Log.log("multiplexer to worker: " + str(data))
 
 		worker = self.workers[self.send_index][0]
 
@@ -131,7 +133,7 @@ class Multiplexer:
 
 		header = Header(line)
 
-		Log.log(header.to_bytes())
+		Log.log("Multiplexer: " + str(header.to_bytes()))
 
 		if not header.valid:
 			return None
@@ -150,7 +152,8 @@ class Multiplexer:
 
 		data = worker.read(header.size)
 
-		Log.log(data)
+		Log.log("multiplexer receive: " + str(data))
+		Log.log(header.to_string())
 
 		self.received_packets[header.sequence_number] = data
 
