@@ -10,9 +10,13 @@ from logger import Log
 
 
 def main():
+	Log.log(sys.argv)
 	launcher = Launcher(sys.argv)
-
-	launcher.launch().poll()
+	obj = launcher.launch()
+	try:
+		obj.poll()
+	except:
+		obj.cleanup()
 	
 	
 
@@ -26,6 +30,15 @@ class Launcher:
 	EXECUTABLE_PATH = "/home/blaine1/C496/launcher.py"
 	ID_STRING = "-id"
 	INIT = "--init"
+	USER = "-l"
+	REMOTE_IP = "--host"
+	RSYNC_ARGS = "--rsync"
+	user = ""
+	remote_ip = ""
+	rsync_args = ""
+	#'-l', 'blaine1',
+	#'192.168.163.199'
+	#'rsync', '--server', '--sender', '-vlogDtprze.iLsf', '.', '~/test/'
 
 
 	def __init__(self, args=None):
@@ -44,6 +57,19 @@ class Launcher:
 		self.remote = Launcher.REMOTE in args
 		self.worker = Launcher.WORKER in  args
 		self.init = Launcher.INIT in args
+
+		print(args)
+		#TODO: super fragile
+		if not self.remote and not self.worker:
+			#in this case we need to extract rsync args
+			Launcher.remote_ip = args[args.index(Launcher.USER) + 2]
+			Launcher.rsync_args = args[args.index(Launcher.USER) + 3:]
+
+
+		#TODO: these are inefficient
+		if Launcher.USER in args:
+			print("yo")
+			Launcher.user = args[args.index(Launcher.USER) + 1]
 
 		if(Launcher.ID_STRING in args):
 			self.ID = int(args[args.index(Launcher.ID_STRING) + 1])
@@ -77,7 +103,7 @@ class Launcher:
 		return (open("/home/blaine1/C496/test/test.in", "rb"), open("/home/blaine1/C496/test/test.out", "wb"))
 
 	def execute_remote_worker(self):
-		args = ["ssh", "192.168.163.199"] + Launcher.original_args + [Launcher.REMOTE]
+		args = ["ssh"] + self.construct_args
 		
 
 		worker = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -93,6 +119,10 @@ class Launcher:
 			args += " " + Launcher.WORKER + " " + Launcher.ID_STRING + " " + str(self.ID)
 		if self.remote:
 			args += " " + Launcher.REMOTE
+		args += " " + Launcher.USER + " " + str(Launcher.user)
+		args += " " + Launcher.REMOTE_IP + " " + str(Launcher.remote_ip)
+		args += " " + Launcher.RSYNC_ARGS + " " + str(Launcher.rsync_args)
+
 		return args
 
 

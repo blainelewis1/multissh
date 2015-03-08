@@ -1,0 +1,6 @@
+['./launcher.py', '-l', 'blaine1', '192.168.163.199']
+['./launcher.py', '-l', 'blaine1', '192.168.163.199']
+['./launcher.py', '-l', 'blaine1', '192.168.163.199']
+['./launcher.py', '-l', 'blaine1', '192.168.163.199']
+['./launcher.py', '-l', 'blaine1', '192.168.163.199']
+['/home/blaine1/C496/launcher.py', '--init', '--worker', '-id', '0', '-l', '--host', '--rsync']

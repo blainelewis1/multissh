@@ -14,7 +14,7 @@ class Header:
 
 	def __init__(self, header=None):
 		self.size = 0
-		self.sequence_number = 0
+		self.sequence_number = -1
 		self.valid = True
 		self.create = 0
 		self.target = False
@@ -50,7 +50,7 @@ class Header:
 		pairs = []
 		if(self.size != 0):
 			pairs.append(self.join_pair(Header.SIZE, str(self.size)))
-		if(self.sequence_number != 0):
+		if(self.sequence_number != -1):
 			pairs.append(self.join_pair(Header.SEQUENCE_NUMBER, str(self.sequence_number)))
 		if(self.create):
 			pairs.append(self.join_pair(Header.CREATE, str(self.create)))

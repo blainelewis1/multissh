@@ -101,11 +101,14 @@ class Multiplexer:
 					#This is relatively expensive O(n^2), could use a map
 					for i in range(len(self.workers)):
 						#pull it off!
-						Log.log(vals)
 						if self.workers[i][1].fileno() == fd:
 							header = self.handle_header(self.workers[i][1].readline())
 							if header:
 								self.receive(i, header)
+
+	def cleanup(self):
+		self.target_in.close()
+		self.target_out.close()
 
 	def send(self, data):
 		#TODO: this will block almost guaranteed
@@ -116,7 +119,7 @@ class Multiplexer:
 
 		header = Header()
 		header.size = len(data)
-		header.sequence = self.send_sequence
+		header.sequence_number = self.send_sequence
 
 		worker.write(header.to_bytes())
 		worker.write(data)

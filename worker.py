@@ -105,6 +105,10 @@ class Worker:
 
 		self.multiplexer_in.flush()
 
+	def cleanup(self):
+		self.opposing_out.close()
+		self.delete_fifos()
+
 	def poll(self):
 
 		#TODO: will we ever need to poll on POLLOUT?
