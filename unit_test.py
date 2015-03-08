@@ -114,7 +114,10 @@ def test_worker():
 			assert(left_multi_read.readline() == to_send)
 			
 			os.unlink(LEFT_WORKER_WRITE)
+	
+
 			os.unlink(LEFT_WORKER_READ)
+
 
 def test_launcher():
 

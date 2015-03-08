@@ -5,13 +5,16 @@ import select
 import os
 from header import Header
 import fcntl
+from logger import Log
 
 class Multiplexer:
 	INIT_WORKERS = 5
 	MAX_READ_SIZE = 2048
 
 	def __init__(self, target_out, target_in, ID=None):
-		print(target_in)
+
+		Log.log(target_in)
+
 
 		self.received_packets = dict()
 
@@ -31,24 +34,16 @@ class Multiplexer:
 		#TODO: I could initiate worker[0] separately
 
 		if ID:
-			print("YOYO")
+			Log.log("YOYOYOY")
 			self.connect_to_worker(ID)
 
 	def init_multiplexer(self):
 		self.create_worker(True)
-		self.send_init_request()
 
 		for i in range(1, Multiplexer.INIT_WORKERS):
 			self.create_worker()
 
-	def send_init_request(self):
-		header = Header()
-		header.init = True
-
-		self.workers[0][0].write(header.to_bytes())
-		self.workers[0][0].flush()
-
-	def create_worker(self, init=True):
+	def create_worker(self, init=False):
 		#spawn process
 
 		ID = len(self.workers)
@@ -56,15 +51,14 @@ class Multiplexer:
 		launcher = launch.Launcher()
 		launcher.worker = True
 		launcher.ID = ID
+		launcher.init = init
 		launcher.execute()
 
 		self.connect_to_worker(ID)
 
-		if init:
+		if not init:
 			header = Header()
 			header.create = ID
-
-			#TODO: is sending the create header via this a good idea?
 
 			self.workers[0][0].write(header.to_bytes())
 			self.workers[0][0].flush()
@@ -93,18 +87,13 @@ class Multiplexer:
 		self.workers.append((worker_in, worker_out))
 
 	def poll(self):
-		#print("polling")
-		
-		#print(self.target_out.fileno())
-
+	
 		while(True):
 			vals = self.poller.poll()
 
 			for fd, event in vals:
-				#print(len(self.workers))
 				if fd == self.target_out.fileno() and len(self.workers) > 0:
 					if(event & select.POLLIN):
-						#print("sending")
 						self.send()	
 					elif event & (select.POLLHUP | select.POLLERR):
 						#TODO: what happens if an error occurs
@@ -114,8 +103,7 @@ class Multiplexer:
 					for i in range(len(self.workers)):
 						#pull it off!
 						if self.workers[i][1].fileno() == fd:
-							header = handle_header(self.workers[i][1].readline())
-							#print("receiving from :" + str(i))
+							header = self.handle_header(self.workers[i][1].readline())
 							if header:
 								self.receive(i, header)
 
@@ -156,7 +144,7 @@ class Multiplexer:
 
 	def receive(self, worker_id, header):	
 		#TODO: instrument out of order packets
-		print("receive")
+		Log.log("receive")
 
 		worker = self.workers[worker_id][0]
 

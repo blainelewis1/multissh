@@ -9,7 +9,6 @@ class Header:
 	KEY_VALUE_DELIMITER = "="
 	SEQUENCE_NUMBER = "SEQUENCE"
 	SIZE = "SIZE"
-	INIT = "INIT"
 	CREATE = "CREATE"
 	TARGET = "TARGET"
 
@@ -18,7 +17,6 @@ class Header:
 		self.sequence_number = 0
 		self.valid = True
 		self.create = 0
-		self.init = False
 		self.target = False
 
 		if(header == None):
@@ -39,12 +37,8 @@ class Header:
 				self.sequence_number = int(value)
 			elif(key == Header.SIZE):
 				self.size = int(value)
-			elif(key == Header.INIT):
-				self.init = value == "True"
 			elif(key == Header.CREATE):
 				self.create = int(value)
-			elif(key == Header.TARGET):
-				self.target = (value == "True")
 			else:
 				self.valid = False
 				return
@@ -58,8 +52,6 @@ class Header:
 			pairs.append(self.join_pair(Header.SIZE, str(self.size)))
 		if(self.sequence_number != 0):
 			pairs.append(self.join_pair(Header.SEQUENCE_NUMBER, str(self.sequence_number)))
-		if(self.init):
-			pairs.append(self.join_pair(Header.INIT, str(self.init)))
 		if(self.create):
 			pairs.append(self.join_pair(Header.CREATE, str(self.create)))
 		if(self.target):

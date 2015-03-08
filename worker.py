@@ -5,6 +5,8 @@ import select
 import os
 from header import Header
 import launcher as launch
+from logger import Log
+
 
 #   Record the time between polls and assume it along 
 #   with the incoming is throughput in order to create
@@ -79,8 +81,8 @@ class Worker:
 	def send_to_opposing(self, header):
 		self.opposing_in.write(header.to_bytes())
 
-		print("To opposing: ")
-		print(header.to_bytes())
+		Log.log("To opposing: ")
+		Log.log(header.to_bytes())
 
 		if header.size != 0:
 			data = self.multiplexer_out.read(header.size)
@@ -92,8 +94,8 @@ class Worker:
 
 		self.multiplexer_in.write(header.to_bytes())
 
-		print("To multiplexer: ")
-		print(header.to_bytes())
+		Log.log("To multiplexer: ")
+		Log.log(header.to_bytes())
 
 		if header.size != 0:
 			data = self.opposing_out.read(header.size)
@@ -110,10 +112,11 @@ class Worker:
 		poll.register(self.multiplexer_out, select.POLLIN)
 		poll.register(self.opposing_out, select.POLLIN)
 
-
 		while(True):
 
 			vals = poll.poll()
+
+			Log.log(vals)			
 
 			for fd, event in vals:
 				if(fd == self.multiplexer_out.fileno()):
@@ -144,17 +147,5 @@ class Worker:
 
 		if(not header.valid):
 			return None
-
-		if header.init:
-			if not header.target:
-				print("sendme")
-				header.target = True
-			else:
-				print("hello")
-				#TOD	O: this won't work
-				launcher = launch.Launcher()
-				launcher.ID = self.ID
-				launcher.execute_remote_multiplexer()
-				return None
 
 		return header
