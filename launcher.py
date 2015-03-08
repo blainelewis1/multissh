@@ -33,9 +33,6 @@ class Launcher:
 	USER = "-l"
 	REMOTE_IP = "--host"
 	RSYNC_ARGS = "--rsync"
-	user = ""
-	remote_ip = ""
-	rsync_args = ""
 	#'-l', 'blaine1',
 	#'192.168.163.199'
 	#'rsync', '--server', '--sender', '-vlogDtprze.iLsf', '.', '~/test/'
@@ -60,7 +57,7 @@ class Launcher:
 
 		print(args)
 		#TODO: super fragile
-		if not self.remote and not self.worker:
+		if not (self.remote and self.worker):
 			#in this case we need to extract rsync args
 			Launcher.remote_ip = args[args.index(Launcher.USER) + 2]
 			Launcher.rsync_args = args[args.index(Launcher.USER) + 3:]
@@ -70,6 +67,8 @@ class Launcher:
 		if Launcher.USER in args:
 			print("yo")
 			Launcher.user = args[args.index(Launcher.USER) + 1]
+
+			print(Launcher.user)
 
 		if(Launcher.ID_STRING in args):
 			self.ID = int(args[args.index(Launcher.ID_STRING) + 1])
