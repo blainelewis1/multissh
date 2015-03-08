@@ -30,6 +30,11 @@ class Launcher:
 		if not Launcher.original_args:
 			Launcher.original_args = args
 
+		f = open('log.txt','a')
+		f.write(str(args) + "\n")
+		f.flush()
+		f.close()
+
 		if args:
 			self.apply_args(args)
 
@@ -37,7 +42,7 @@ class Launcher:
 		self.remote = Launcher.REMOTE in args
 		self.worker = Launcher.WORKER in  args
 
-		if(self.worker):
+		if(Launcher.ID_STRING in args):
 			self.ID = int(args[args.index(Launcher.ID_STRING) + 1])
 
 	def launch(self):
@@ -47,7 +52,7 @@ class Launcher:
 				obj = worker.Worker(self.ID, sys.stdin.buffer, sys.stdout.buffer)
 			else:
 				target_out, target_in  = self.open_remote_target()
-				obj = multiplexer.Multiplexer(target_out, target_in)				
+				obj = multiplexer.Multiplexer(target_out, target_in, self.ID)				
 				
 		else:
 			if self.worker:
@@ -66,7 +71,7 @@ class Launcher:
 		return (open("/home/blaine1/C496/test/test.in", "rb"), open("/home/blaine1/C496/test/test.out", "wb"))
 
 	def execute_remote_worker(self):
-		args = ["ssh", "192.168.163.214"] + Launcher.original_args + [Launcher.REMOTE]
+		args = ["ssh", "192.168.163.199"] + Launcher.original_args + [Launcher.REMOTE]
 		
 		worker = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 		

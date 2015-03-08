@@ -11,6 +11,7 @@ class Header:
 	SIZE = "SIZE"
 	INIT = "INIT"
 	CREATE = "CREATE"
+	TARGET = "TARGET"
 
 	def __init__(self, header=None):
 		self.size = 0
@@ -18,7 +19,8 @@ class Header:
 		self.valid = True
 		self.create = 0
 		self.init = False
-		
+		self.target = False
+
 		if(header == None):
 			return
 
@@ -41,6 +43,8 @@ class Header:
 				self.init = value == "True"
 			elif(key == Header.CREATE):
 				self.create = int(value)
+			elif(key == Header.TARGET):
+				self.target = (value == "True")
 			else:
 				self.valid = False
 				return
@@ -58,6 +62,8 @@ class Header:
 			pairs.append(self.join_pair(Header.INIT, str(self.init)))
 		if(self.create):
 			pairs.append(self.join_pair(Header.CREATE, str(self.create)))
+		if(self.target):
+			pairs.append(self.join_pair(Header.TARGET, str(self.TARGET)))
 
 		return  Header.PAIR_DELIMITER.join(pairs) + "\n"
 

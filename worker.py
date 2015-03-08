@@ -79,6 +79,9 @@ class Worker:
 	def send_to_opposing(self, header):
 		self.opposing_in.write(header.to_bytes())
 
+		print("To opposing: ")
+		print(header.to_bytes())
+
 		if header.size != 0:
 			data = self.multiplexer_out.read(header.size)
 			self.opposing_in.write(data)
@@ -88,6 +91,9 @@ class Worker:
 	def send_to_multiplexer(self, header):
 
 		self.multiplexer_in.write(header.to_bytes())
+
+		print("To multiplexer: ")
+		print(header.to_bytes())
 
 		if header.size != 0:
 			data = self.opposing_out.read(header.size)
@@ -139,14 +145,16 @@ class Worker:
 		if(not header.valid):
 			return None
 
-		if header.create:
-			return header
-
 		if header.init:
-			#TODO: this won't work
-			launcher = launch.Launcher()
-			launcher.ID = self.ID
-			launcher.execute_remote_multiplexer()
-			return None
+			if not header.target:
+				print("sendme")
+				header.target = True
+			else:
+				print("hello")
+				#TOD	O: this won't work
+				launcher = launch.Launcher()
+				launcher.ID = self.ID
+				launcher.execute_remote_multiplexer()
+				return None
 
 		return header
