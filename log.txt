@@ -10,3 +10,8 @@
 ['./launcher.py', '-l', 'blaine1', '192.168.163.199']
 ['./launcher.py', '-l', 'blaine1', '192.168.163.199']
 ['./launcher.py']
+['./launcher.py', '-l', 'blaine1', '192.168.163.199']
+['./launcher.py', '-l', 'blaine1', '192.168.163.199']
+['./launcher.py', '-l', 'blaine1', '192.168.163.199']
+['./launcher.py', '-l', 'blaine1', '192.168.163.199']
+['./launcher.py', '-l', 'blaine1', '192.168.163.199']

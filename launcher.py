@@ -1,149 +1,105 @@
 #!/usr/bin/python3.3
 
-import shlex
 import sys
-import worker
 import multiplexer
+import worker
 import subprocess
-from logger import Log
-
-
 
 def main():
-	Log.log(sys.argv)
 	launcher = Launcher(sys.argv)
+	
 	obj = launcher.launch()
 	try:
 		obj.poll()
 	except:
 		obj.cleanup()
-	
-	
 
-#TODO: pass ssh stuff over
 class Launcher:
-
-	original_args = None
-
 	REMOTE = "--remote"
 	WORKER = "--worker"
-	EXECUTABLE_PATH = "/home/blaine1/C496/launcher.py"
-	ID_STRING = "-id"
 	INIT = "--init"
 	USER = "-l"
-	REMOTE_IP = "--host"
-	RSYNC_ARGS = "--rsync"
-	#'-l', 'blaine1',
-	#'192.168.163.199'
-	#'rsync', '--server', '--sender', '-vlogDtprze.iLsf', '.', '~/test/'
+	REMOTE_HOST = "--remote_host"
+	RSYNC_ARGS = "--rsync_args"
+	EXECUTABLE_PATH = "/home/blaine1/C496/launcher.py"
+	user = ""
+	rsync_args = ""
+	remote_host = ""
 
-
-	def __init__(self, args=None):
+	def __init__(self, args=None):		
+		print(args)
 		self.remote = False
 		self.worker = False
-		self.init = False
-
-
-		if not Launcher.original_args:
-			Launcher.original_args = args
-
 		if args:
-			self.apply_args(args)
+			self.parse_args(args)		
 
-	def apply_args(self, args):
+	def parse_args(self, args):
 		self.remote = Launcher.REMOTE in args
 		self.worker = Launcher.WORKER in  args
 		self.init = Launcher.INIT in args
 
-		print(args)
-		#TODO: super fragile
 		if not (self.remote and self.worker):
-			#in this case we need to extract rsync args
-			Launcher.remote_ip = args[args.index(Launcher.USER) + 2]
-			Launcher.rsync_args = args[args.index(Launcher.USER) + 3:]
+			user_index = args.index(Launcher.USER)
+			self.user = args[user_index + 1]
+			self.remote_host = args[user_index + 2]
+			self.rsync_args = args[user_index + 3:]
+		else:
+			self.user = args[args.index(USER) + 1]
+			self.remote_host = args[args.index(REMOTE_HOST) + 1]
+			self.rsync_args = args[args.index(RSYNC_ARGS) + 1]
 
-
-		#TODO: these are inefficient
-		if Launcher.USER in args:
-			print("yo")
-			Launcher.user = args[args.index(Launcher.USER) + 1]
-
-			print(Launcher.user)
-
-		if(Launcher.ID_STRING in args):
-			self.ID = int(args[args.index(Launcher.ID_STRING) + 1])
+		print(self.user)
 
 	def launch(self):
 		obj = None
+
+		if self.init:
+			launch_remote_multiplexer()
+		
 		if self.remote:
 			if self.worker:
-				if self.init:
-					self.execute_remote_multiplexer()
+				obj = create_remote_worker()
+			else:
+				obj = create_remote_multiplexer()
 
-				obj = worker.Worker(self.ID, sys.stdin.buffer, sys.stdout.buffer)
-			else:
-				target_out, target_in  = self.open_remote_target()
-				obj = multiplexer.Multiplexer(target_out, target_in, self.ID)				
-				
+		elif self.worker:
+			launcher = Launcher()
+			launcher.remote = True
+			launcher.worker = True
+			worker_in, worker_out = launcher.execute()
+			obj = worker.Worker()
 		else:
-			if self.worker:
-				#do the ssh thinger
-				worker_out, worker_in = self.execute_remote_worker()
-				obj = worker.Worker(self.ID, worker_out, worker_in)
-			else:
-				#this is a local multiplexer
-				obj = multiplexer.Multiplexer(sys.stdin.buffer, sys.stdout.buffer)
-				obj.init_multiplexer()
+			#this is a default one....
+			obj = multiplexer.Multiplexer(sys.stdin.buffer, sys.stdout.buffer)
+			obj.init_multiplexer()
 
 		return obj
 
-	def open_remote_target(self):
-		#TODO: these are mocks atm
-		return (open("/home/blaine1/C496/test/test.in", "rb"), open("/home/blaine1/C496/test/test.out", "wb"))
-
-	def execute_remote_worker(self):
-		args = ["ssh"] + self.construct_args
-		
-
-		worker = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-		
-		return (worker.stdout, worker.stdin)
-
-	def construct_args(self):
-		#TODO: executable path is a poor way to do that
-		args = Launcher.EXECUTABLE_PATH
-		if self.init:
-			args += " " + Launcher.INIT
-		if self.worker: 
-			args += " " + Launcher.WORKER + " " + Launcher.ID_STRING + " " + str(self.ID)
-		if self.remote:
-			args += " " + Launcher.REMOTE
-		args += " " + Launcher.USER + " " + str(Launcher.user)
-		args += " " + Launcher.REMOTE_IP + " " + str(Launcher.remote_ip)
-		args += " " + Launcher.RSYNC_ARGS + " " + str(Launcher.rsync_args)
-
-		return args
-
-
-	def execute_remote_multiplexer(self):
-		args = Launcher.EXECUTABLE_PATH + " " + Launcher.REMOTE + " " + Launcher.ID_STRING + " "  + str(self.ID)
-
-		subprocess.Popen(shlex.split(args))
 
 	def execute(self):
+		if self.worker and self.remote:
+			args = ["ssh", self.remote_host] + self.construct_args()
+			subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+		elif self.worker:
+			args = self.construct_args()
+			subprocess.Popen(args)
 
-		args = self.construct_args()
+	def construct_args(self):
+		args = []
+		args.append(Launcher.EXECUTABLE_PATH)
+		if self.remote:
+			args.append(Launcher.REMOTE)
 
-		subprocess.Popen(shlex.split(args))
 		if self.worker:
-			#worker.Workers are executed AND launched from the local side 
-			#TODO: from here we actually need to launch two things. Remote and launch
-			pass
-		else:
-			#multiplexer.Multiplexers are only executed from the remote side and 
-			pass
+			args.append(Launcher.WORKER)
 
+		args.append(Launcher.USER)
+		args.append(self.user)
 
+		args.append(Launcher.RSYNC_ARGS)
+		args.append(self.rsync_args)
+
+		return args
 
 
 if __name__ == '__main__':
