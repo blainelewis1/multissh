@@ -11,9 +11,6 @@ from logger import Log
 #   with the incoming is throughput in order to create
 #   a form of weighted round robin
 
-#TODO: special header to start multi on opposing end
-#TODO: special header to tell multi to open another worker
-#TODO: create the worker on the other side (keep it outside the worker class)
 #TODO: What if we get a deadlock while waiting for the first worker to create a multiplexer?
 
 
@@ -132,6 +129,7 @@ class Worker:
 					elif(event & (select.POLLHUP | select.POLLERR)):
 						#TODO: what happens if an error occurs
 						self.delete_fifos()
+						Log.log("Worker closed because multi closed")
 						sys.exit(0)
 						
 				elif(fd == self.opposing_out.fileno()):
@@ -141,14 +139,18 @@ class Worker:
 							self.send_to_multiplexer(header)
 					elif(event & (select.POLLHUP | select.POLLERR)):
 						#TODO: what happens if an error occurs
+						Log.log("Worker closed because opposing closed")
 						self.delete_fifos()
 						sys.exit(0)
 						
 	def handle_header(self, line):
 		if not line:
+			Log.log("Worker: 0 read, closed")
 			sys.exit(0)
 
 		header = Header(line)
+
+		Log.log(header.to_string())
 
 		if(not header.valid):
 			return None

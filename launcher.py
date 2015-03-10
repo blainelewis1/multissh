@@ -59,27 +59,19 @@ class Launcher:
 		self.worker = Launcher.WORKER in  args
 		self.init = Launcher.INIT in args
 
-
-		Log.log(args)
 		#TODO: super fragile
 		#if not (self.remote and self.worker):
 		#in this case we need to extract rsync args
 		
 		self.remote_ip_val = args[args.index(Launcher.USER) + 2]
-		self.rsync_args_val = args[args.index(Launcher.USER) + 3:]		
+		#self.rsync_args_val = args[args.index(Launcher.USER) + 3:]		
+		self.rsync_args_val = ""		
 		self.user_val = args[args.index(Launcher.USER) + 1]
 
 
 		if(Launcher.ID_STRING in args):
 			self.ID = int(args[args.index(Launcher.ID_STRING) + 1])
 
-
-
-		#Launcher.user_val = self.user_val
-		#Launcher.rsync_args_val = self.rsync_args_val
-		#Launcher.remote_ip_val = self.remote_ip_val
-
-		#print(Launcher.user_val)
 
 	def launch(self):
 		obj = None
@@ -106,16 +98,14 @@ class Launcher:
 		return obj
 
 	def open_remote_target(self):
-		#TODO: these are mocks atm
-		target = subprocess.Popen(shlex.split(" ".join(self.rsync_args_val)), stdout=subprocess.PIPE,stdin=subprocess.PIPE)
+		
+		target = subprocess.Popen(shlex.split(" ".join(self.rsync_args_val)), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
 		return (target.stdout, target.stdin)
 
 	def execute_remote_worker(self):
 		args = "ssh " + self.remote_ip_val + " " + self.USER +" " + self.user_val +" "+ self.construct_args(True)
 		
-		print(args)
-
 		worker = subprocess.Popen(shlex.split(args), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 		
 		return (worker.stdout, worker.stdin)

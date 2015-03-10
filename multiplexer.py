@@ -88,6 +88,7 @@ class Multiplexer:
 	
 		while(True):
 			vals = self.poller.poll()
+			Log.log(vals)
 
 			for fd, event in vals:
 				if fd == self.target_out.fileno() and len(self.workers) > 0:
@@ -97,6 +98,7 @@ class Multiplexer:
 							self.send(data)		
 					elif event & (select.POLLHUP | select.POLLERR):
 						#TODO: what happens if an error occurs
+						Log.log("Multi closed")
 						sys.exit(0)
 				else:
 					#This is relatively expensive O(n^2), could use a map
@@ -133,11 +135,13 @@ class Multiplexer:
 
 	def handle_header(self, line):
 		if not line:
+			Log.log("0 read, closed")
 			sys.exit(0)
 
 		header = Header(line)
 
 		Log.log("Multiplexer: " + str(header.to_bytes()))
+
 
 		if not header.valid:
 			return None
@@ -166,10 +170,11 @@ class Multiplexer:
 
 	def attempt_receive(self):
 		while True:
-			Log.log("attempting")
 			data = self.received_packets.get(self.receive_sequence)
 
 			if data:
+				Log.log("Actually sent to rsync" + data)
+
 				self.target_in.write(data)
 				self.target_in.flush()
 				del self.received_packets[self.receive_sequence]
