@@ -4,7 +4,6 @@ import sys
 import select
 import os
 from header import Header
-import launcher as launch
 from logger import Log
 
 
@@ -51,12 +50,12 @@ class Worker:
 
 		try:
 			os.mkfifo(write_path)
-		except FileExistsError:
+		except OSError:
 			pass
 
 		try:
 			os.mkfifo(read_path)
-		except FileExistsError:
+		except OSError:
 			pass
 
 
@@ -71,11 +70,11 @@ class Worker:
 
 		try:
 			os.unlink(write_path)
-		except FileNotFoundError:
+		except OSError:
 			pass
 		try:
 			os.unlink(read_path)
-		except FileNotFoundError:
+		except OSError:
 			pass
 
 	def send_to_opposing(self, header):

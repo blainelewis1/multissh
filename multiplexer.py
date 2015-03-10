@@ -1,5 +1,5 @@
 import worker
-import launcher as launch
+import launcher
 import subprocess
 import select
 import os
@@ -12,10 +12,10 @@ class Multiplexer:
 	INIT_WORKERS = 5
 	MAX_READ_SIZE = 2048
 
-	def __init__(self, target_out, target_in, ID=None):
+	def __init__(self, target_out, target_in, ID=None, launch=None):
 
 		self.received_packets = dict()
-
+		self.default_launcher = launch
 		self.workers = []
 		self.target_in = target_in
 		self.target_out = target_out
@@ -45,11 +45,13 @@ class Multiplexer:
 
 		ID = len(self.workers)
 
-		launcher = launch.Launcher()
-		launcher.worker = True
-		launcher.ID = ID
-		launcher.init = init
-		launcher.execute()
+
+		launch = launcher.Launcher(launch=self.default_launcher)
+		print("multi" + launch.user_val)
+		launch.worker = True
+		launch.ID = ID
+		launch.init = init
+		launch.execute()
 
 		self.connect_to_worker(ID)
 
@@ -66,12 +68,12 @@ class Multiplexer:
 
 		try:
 			os.mkfifo(write_path)
-		except FileExistsError:
+		except OSError:
 			pass
 
 		try:
 			os.mkfifo(read_path)
-		except FileExistsError:
+		except OSError:
 			pass
 
 		#CAUTION this will deadlock as the read or write

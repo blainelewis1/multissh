@@ -1,4 +1,4 @@
-#!/usr/bin/python3.3
+#!/usr/bin/python2 -u
 
 import shlex
 import sys
@@ -37,18 +37,24 @@ class Launcher:
 	#'192.168.163.199'
 	#'rsync', '--server', '--sender', '-vlogDtprze.iLsf', '.', '~/test/'
 
-
-	def __init__(self, args=None):
+	def __init__(self, args=None,launch=None):
 		self.remote = False
 		self.worker = False
 		self.init = False
 
+		if launch:
+			self.user_val = launch.user_val
+			self.remote_ip_val = launch.remote_ip_val
+			self.rsync_args_val = launch.rsync_args_val
 
 		if not Launcher.original_args:
 			Launcher.original_args = args
 
 		if args:
 			self.apply_args(args)
+
+
+		print("INIT:" + self.user_val)
 
 	def apply_args(self, args):
 		self.remote = Launcher.REMOTE in args
@@ -57,21 +63,23 @@ class Launcher:
 
 		print(args)
 		#TODO: super fragile
-		if not (self.remote and self.worker):
-			#in this case we need to extract rsync args
-			Launcher.remote_ip = args[args.index(Launcher.USER) + 2]
-			Launcher.rsync_args = args[args.index(Launcher.USER) + 3:]
-
-
-		#TODO: these are inefficient
-		if Launcher.USER in args:
-			print("yo")
-			Launcher.user = args[args.index(Launcher.USER) + 1]
-
-			print(Launcher.user)
+		#if not (self.remote and self.worker):
+		#in this case we need to extract rsync args
+		
+		self.remote_ip_val = args[args.index(Launcher.USER) + 2]
+		self.rsync_args_val = args[args.index(Launcher.USER) + 3:]		
+		self.user_val = args[args.index(Launcher.USER) + 1]
 
 		if(Launcher.ID_STRING in args):
 			self.ID = int(args[args.index(Launcher.ID_STRING) + 1])
+
+
+
+		#Launcher.user_val = self.user_val
+		#Launcher.rsync_args_val = self.rsync_args_val
+		#Launcher.remote_ip_val = self.remote_ip_val
+
+		#print(Launcher.user_val)
 
 	def launch(self):
 		obj = None
@@ -80,7 +88,7 @@ class Launcher:
 				if self.init:
 					self.execute_remote_multiplexer()
 
-				obj = worker.Worker(self.ID, sys.stdin.buffer, sys.stdout.buffer)
+				obj = worker.Worker(self.ID, sys.stdin, sys.stdout)
 			else:
 				target_out, target_in  = self.open_remote_target()
 				obj = multiplexer.Multiplexer(target_out, target_in, self.ID)				
@@ -92,7 +100,7 @@ class Launcher:
 				obj = worker.Worker(self.ID, worker_out, worker_in)
 			else:
 				#this is a local multiplexer
-				obj = multiplexer.Multiplexer(sys.stdin.buffer, sys.stdout.buffer)
+				obj = multiplexer.Multiplexer(sys.stdin, sys.stdout, launch=self)
 				obj.init_multiplexer()
 
 		return obj
@@ -102,10 +110,10 @@ class Launcher:
 		return (open("/home/blaine1/C496/test/test.in", "rb"), open("/home/blaine1/C496/test/test.out", "wb"))
 
 	def execute_remote_worker(self):
-		args = ["ssh"] + self.construct_args
+		args = "ssh " + self.remote_ip_val + " " + self.USER +" " + self.user_val +" "+ self.construct_args()
 		
-
-		worker = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+		print("fork")
+		worker = subprocess.Popen(shlex.split(args), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 		
 		return (worker.stdout, worker.stdin)
 
@@ -118,9 +126,10 @@ class Launcher:
 			args += " " + Launcher.WORKER + " " + Launcher.ID_STRING + " " + str(self.ID)
 		if self.remote:
 			args += " " + Launcher.REMOTE
-		args += " " + Launcher.USER + " " + str(Launcher.user)
-		args += " " + Launcher.REMOTE_IP + " " + str(Launcher.remote_ip)
-		args += " " + Launcher.RSYNC_ARGS + " " + str(Launcher.rsync_args)
+		
+		args += " " + Launcher.USER + " " + str(self.user_val)
+		args += " " + str(self.remote_ip_val)
+		args += " " + str(self.rsync_args_val)
 
 		return args
 
@@ -128,22 +137,17 @@ class Launcher:
 	def execute_remote_multiplexer(self):
 		args = Launcher.EXECUTABLE_PATH + " " + Launcher.REMOTE + " " + Launcher.ID_STRING + " "  + str(self.ID)
 
+		print("fork")
+
 		subprocess.Popen(shlex.split(args))
 
 	def execute(self):
 
 		args = self.construct_args()
+		print("fork")
+
 
 		subprocess.Popen(shlex.split(args))
-		if self.worker:
-			#worker.Workers are executed AND launched from the local side 
-			#TODO: from here we actually need to launch two things. Remote and launch
-			pass
-		else:
-			#multiplexer.Multiplexers are only executed from the remote side and 
-			pass
-
-
 
 
 if __name__ == '__main__':

@@ -61,4 +61,4 @@ class Header:
 
 
 	def to_bytes(self):
-		return bytes(self.to_string(), 'UTF-8')
+		return bytes(self.to_string())
