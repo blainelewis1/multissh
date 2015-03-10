@@ -54,14 +54,13 @@ class Launcher:
 			self.apply_args(args)
 
 
-		print("INIT:" + self.user_val)
-
 	def apply_args(self, args):
 		self.remote = Launcher.REMOTE in args
 		self.worker = Launcher.WORKER in  args
 		self.init = Launcher.INIT in args
 
-		print(args)
+
+		Log.log(args)
 		#TODO: super fragile
 		#if not (self.remote and self.worker):
 		#in this case we need to extract rsync args
@@ -69,6 +68,7 @@ class Launcher:
 		self.remote_ip_val = args[args.index(Launcher.USER) + 2]
 		self.rsync_args_val = args[args.index(Launcher.USER) + 3:]		
 		self.user_val = args[args.index(Launcher.USER) + 1]
+
 
 		if(Launcher.ID_STRING in args):
 			self.ID = int(args[args.index(Launcher.ID_STRING) + 1])
@@ -107,45 +107,48 @@ class Launcher:
 
 	def open_remote_target(self):
 		#TODO: these are mocks atm
-		return (open("/home/blaine1/C496/test/test.in", "rb"), open("/home/blaine1/C496/test/test.out", "wb"))
+		target = subprocess.Popen(shlex.split(" ".join(self.rsync_args_val)), stdout=subprocess.PIPE,stdin=subprocess.PIPE)
+
+		return (target.stdout, target.stdin)
 
 	def execute_remote_worker(self):
-		args = "ssh " + self.remote_ip_val + " " + self.USER +" " + self.user_val +" "+ self.construct_args()
+		args = "ssh " + self.remote_ip_val + " " + self.USER +" " + self.user_val +" "+ self.construct_args(True)
 		
-		print("fork")
+		print(args)
+
 		worker = subprocess.Popen(shlex.split(args), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 		
 		return (worker.stdout, worker.stdin)
 
-	def construct_args(self):
+	def construct_args(self, remote=False):
 		#TODO: executable path is a poor way to do that
 		args = Launcher.EXECUTABLE_PATH
 		if self.init:
 			args += " " + Launcher.INIT
 		if self.worker: 
 			args += " " + Launcher.WORKER + " " + Launcher.ID_STRING + " " + str(self.ID)
-		if self.remote:
+		if self.remote or remote:
 			args += " " + Launcher.REMOTE
 		
 		args += " " + Launcher.USER + " " + str(self.user_val)
 		args += " " + str(self.remote_ip_val)
-		args += " " + str(self.rsync_args_val)
+		args += " " + " ".join(self.rsync_args_val)
 
 		return args
 
 
 	def execute_remote_multiplexer(self):
 		args = Launcher.EXECUTABLE_PATH + " " + Launcher.REMOTE + " " + Launcher.ID_STRING + " "  + str(self.ID)
-
-		print("fork")
+		
+		args += " " + Launcher.USER + " " + str(self.user_val)
+		args += " " + str(self.remote_ip_val)
+		args += " " + " ".join(self.rsync_args_val)
 
 		subprocess.Popen(shlex.split(args))
 
 	def execute(self):
 
 		args = self.construct_args()
-		print("fork")
-
 
 		subprocess.Popen(shlex.split(args))
 

@@ -47,7 +47,6 @@ class Multiplexer:
 
 
 		launch = launcher.Launcher(launch=self.default_launcher)
-		print("multi" + launch.user_val)
 		launch.worker = True
 		launch.ID = ID
 		launch.init = init
