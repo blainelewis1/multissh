@@ -1,13 +1,13 @@
 #!/usr/bin/python2 -u
-
+import traceback
 import shlex
 import sys
 import worker
 import multiplexer
 import subprocess
 from logger import Log
-
-
+#import cProfile
+import time
 
 def main():
 	Log.log(sys.argv)
@@ -15,8 +15,13 @@ def main():
 	obj = launcher.launch()
 	try:
 		obj.poll()
-	except:
+	except Exception as e:
+		Log.log(e)
+
+		my_log = open(Log.log_file, 'a')
+		traceback.print_exc(file=my_log)
 		obj.cleanup()
+
 	
 	
 
@@ -64,8 +69,10 @@ class Launcher:
 		#in this case we need to extract rsync args
 		
 		self.remote_ip_val = args[args.index(Launcher.USER) + 2]
-		#self.rsync_args_val = args[args.index(Launcher.USER) + 3:]		
-		self.rsync_args_val = ""		
+		
+		#TODO: this is a mock
+		self.rsync_args_val = args[args.index(Launcher.USER) + 3:]		
+		#self.rsync_args_val = ""		
 		self.user_val = args[args.index(Launcher.USER) + 1]
 
 
@@ -100,6 +107,7 @@ class Launcher:
 	def open_remote_target(self):
 		
 		target = subprocess.Popen(shlex.split(" ".join(self.rsync_args_val)), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+		#target = subprocess.Popen(["bash"], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
 		return (target.stdout, target.stdin)
 
@@ -144,4 +152,5 @@ class Launcher:
 
 
 if __name__ == '__main__':
+	#cProfile.run("main()", str(time.time()))
 	main()

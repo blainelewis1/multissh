@@ -1,3 +1,5 @@
+from logger import Log
+
 #TODO: we could actually make headers more useful and we could 
 
 #Invalid headers set valid to false and return
@@ -7,10 +9,13 @@
 class Header:
 	PAIR_DELIMITER = "&"
 	KEY_VALUE_DELIMITER = "="
-	SEQUENCE_NUMBER = "SEQUENCE"
-	SIZE = "SIZE"
-	CREATE = "CREATE"
-	TARGET = "TARGET"
+	SEQUENCE_NUMBER = "SEQ"
+	SIZE = "S"
+	CREATE = "C"
+	TARGET = "T"
+	FILL = "F"
+
+	HEADER_SIZE = 32
 
 	def __init__(self, header=None):
 		self.size = 0
@@ -39,6 +44,8 @@ class Header:
 				self.size = int(value)
 			elif(key == Header.CREATE):
 				self.create = int(value)
+			elif key == Header.FILL:
+				pass
 			else:
 				self.valid = False
 				return
@@ -57,7 +64,13 @@ class Header:
 		if(self.target):
 			pairs.append(self.join_pair(Header.TARGET, str(self.TARGET)))
 
-		return  Header.PAIR_DELIMITER.join(pairs) + "\n"
+
+		string = Header.PAIR_DELIMITER.join(pairs)
+		#string += Header.PAIR_DELIMITER
+		#string += self.join_pair(Header.FILL, "X"*(Header.HEADER_SIZE - len(string)-3))
+		string += "\n"
+
+		return string
 
 
 	def to_bytes(self):

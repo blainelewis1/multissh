@@ -77,12 +77,11 @@ class Worker:
 	def send_to_opposing(self, header):
 		self.opposing_in.write(header.to_bytes())
 
-		#Log.log("To opposing: ")
-		#Log.log(header.to_bytes())
+		Log.log("Worker Sending: " + str(self.ID))
+
 
 		if header.size != 0:
 			data = self.multiplexer_out.read(header.size)
-			Log.log("worker to opposing: " + str(data))
 			self.opposing_in.write(data)
 			
 		self.opposing_in.flush()
@@ -91,12 +90,10 @@ class Worker:
 
 		self.multiplexer_in.write(header.to_bytes())
 
-		#Log.log("To multiplexer: ")
-		#Log.log(header.to_bytes())
+		Log.log("Worker receiving: " + str(self.ID))
 
 		if header.size != 0:
 			data = self.opposing_out.read(header.size)
-			Log.log("worker to multiplexer: " + str(data))
 			self.multiplexer_in.write(data)
 
 		self.multiplexer_in.flush()
@@ -107,18 +104,15 @@ class Worker:
 
 	def poll(self):
 
-		#TODO: will we ever need to poll on POLLOUT?
-
-
 		poll = select.poll()
 		poll.register(self.multiplexer_out, select.POLLIN)
 		poll.register(self.opposing_out, select.POLLIN)
+
 
 		while(True):
 
 			vals = poll.poll()
 
-			#Log.log(vals)			
 
 			for fd, event in vals:
 				if(fd == self.multiplexer_out.fileno()):
@@ -127,30 +121,24 @@ class Worker:
 						if header:
 							self.send_to_opposing(header)
 					elif(event & (select.POLLHUP | select.POLLERR)):
-						#TODO: what happens if an error occurs
 						self.delete_fifos()
-						Log.log("Worker closed because multi closed")
 						sys.exit(0)
-						
+
+
 				elif(fd == self.opposing_out.fileno()):
 					if(event & select.POLLIN):
 						header = self.handle_header(self.opposing_out.readline())
 						if header:
 							self.send_to_multiplexer(header)
 					elif(event & (select.POLLHUP | select.POLLERR)):
-						#TODO: what happens if an error occurs
-						Log.log("Worker closed because opposing closed")
 						self.delete_fifos()
 						sys.exit(0)
 						
 	def handle_header(self, line):
 		if not line:
-			Log.log("Worker: 0 read, closed")
 			sys.exit(0)
 
 		header = Header(line)
-
-		Log.log(header.to_string())
 
 		if(not header.valid):
 			return None
