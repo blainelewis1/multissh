@@ -1,6 +1,7 @@
 import sys
 import select
 import os
+
 from header import Header
 
 
@@ -144,18 +145,22 @@ class Worker:
 			for fd, event in vals:
 				if(fd == self.multiplexer_out.fileno()):
 					if(event & select.POLLIN):
+
 						header = self.handle_header(self.multiplexer_out.readline())
 						if header:
 							self.send_to_opposing(header)
+							
 					elif(event & (select.POLLHUP | select.POLLERR)):
 						self.delete_fifos()
 						sys.exit(0)
 
 				elif(fd == self.opposing_out.fileno()):
 					if(event & select.POLLIN):
+
 						header = self.handle_header(self.opposing_out.readline())
 						if header:
 							self.send_to_multiplexer(header)
+
 					elif(event & (select.POLLHUP | select.POLLERR)):
 						self.delete_fifos()
 						sys.exit(0)

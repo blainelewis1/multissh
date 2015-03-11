@@ -1,19 +1,24 @@
 #!/usr/bin/python2 -u
-import traceback
+
+
 import shlex
 import sys
+import subprocess
+
+#import time
+
+import traceback
+
 import worker
 import multiplexer
-import subprocess
 from logger import Log
-import time
+
 
 
 """ 
 	This file acts as the starting point for the application
 	It handles command line arguments as well spawning new 
 	workers or multiplexers. 
-
 
 """
 
@@ -29,9 +34,9 @@ def main():
 
 		#This is here for debugging purposes
 
-		#Log.log(e)
-		#my_log = open(Log.log_file, 'a')
-		#traceback.print_exc(file=my_log)
+		Log.log(e)
+		my_log = open(Log.log_file, 'a')
+		traceback.print_exc(file=my_log)
 
 		obj.cleanup()
 
