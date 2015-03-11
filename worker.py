@@ -1,27 +1,37 @@
-#!/usr/bin/python3.3
-
 import sys
 import select
 import os
 from header import Header
 
 
-#   Record the time between polls and assume it along 
-#   with the incoming is throughput in order to create
-#   a form of weighted round robin
+"""
+	
+	Workers receive data from the multiplexer via
+	a named pipe and send it to their opposing worker
 
-#TODO: What if we get a deadlock while waiting for the first worker to create a multiplexer?
+	They also receive data from their opposing worker
+	to send to their multiplexer (via their named pipe)
 
+	Future work:
 
-#ALTERNATE thing
+	Record the time between polls and assume it along 
+	with the incoming is throughput in order to create
+	a form of weighted round robin
 
-#set an arg saying we be the first worker to be opened
+"""
 
 
 class Worker:
+	#Constants as to wear to put the named fifo
+
+	#TODO: this would be better if it were in the temp folder
+	#as well as given a more unique identifier
+
 	WRITE_PATH = "/home/blaine1/C496/WRITE_"
 	READ_PATH = "/home/blaine1/C496/READ_"
 	
+
+	#Methods to get these paths for a specific ID
 	@staticmethod
 	def get_write_path(ID):
 		return Worker.WRITE_PATH + str(ID) + ".fifo"
@@ -29,6 +39,10 @@ class Worker:
 	@staticmethod
 	def get_read_path(ID):
 		return Worker.READ_PATH + str(ID) + ".fifo"
+
+
+	#Workers take a writable and readable file in order to connect
+	#To the other end of the worker
 
 	def __init__(self, ID, opposing_out, opposing_in):
 
@@ -39,11 +53,19 @@ class Worker:
 
 		self.open_fifos()
 
+	#This method opens the named pipes in order to communicate with the
+	#multiplexer
+	#NOTE: this method is vulnerable to a deadlock as noted within the 
+	#method body
+
 	def open_fifos(self):
 
 		write_path = Worker.get_write_path(self.ID)
 		read_path = Worker.get_read_path(self.ID)
 
+
+		#If the fifo was made already it will error
+		#TODO: this might be a performance hit
 		try:
 			os.mkfifo(write_path)
 		except OSError:
@@ -57,9 +79,12 @@ class Worker:
 
 		#CAUTION this will deadlock as the read or write
 		#side actually blocks until the other end is opened
+		#Therefore the multiplexer must open the read side first
+
 		self.multiplexer_in = open(write_path, "wb")
 		self.multiplexer_out = open(read_path, "rb")
 
+	#Removes the fifos on delete
 	def delete_fifos(self):
 		write_path = Worker.get_write_path(self.ID)
 		read_path = Worker.get_read_path(self.ID)
@@ -73,10 +98,9 @@ class Worker:
 		except OSError:
 			pass
 
+	#Reads from the multiplexer and sends to the opposing worker
 	def send_to_opposing(self, header):
 		self.opposing_in.write(header.to_bytes())
-
-
 
 		if header.size != 0:
 			data = self.multiplexer_out.read(header.size)
@@ -84,6 +108,7 @@ class Worker:
 			
 		self.opposing_in.flush()
 
+	#Reads from the opposing worker and sends to the multiplexer
 	def send_to_multiplexer(self, header):
 
 		self.multiplexer_in.write(header.to_bytes())
@@ -94,10 +119,16 @@ class Worker:
 
 		self.multiplexer_in.flush()
 
+	#Cleans up all the resources
 	def cleanup(self):
 		self.opposing_out.close()
 		self.delete_fifos()
 
+
+	#This is essentially a main loop
+	#It will continually read from the opposing worker
+	#and the multiplexer until one of them closes in which 
+	#case it will exit
 	def poll(self):
 
 		poll = select.poll()
@@ -120,7 +151,6 @@ class Worker:
 						self.delete_fifos()
 						sys.exit(0)
 
-
 				elif(fd == self.opposing_out.fileno()):
 					if(event & select.POLLIN):
 						header = self.handle_header(self.opposing_out.readline())
@@ -130,6 +160,9 @@ class Worker:
 						self.delete_fifos()
 						sys.exit(0)
 						
+
+	#Verifies and extracts the header as well as handles special
+	#Headers
 	def handle_header(self, line):
 		if not line:
 			sys.exit(0)
