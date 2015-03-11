@@ -75,13 +75,13 @@ class Multiplexer:
 	#From here we init the local multiplexer by creating the workers required
 	def init_multiplexer(self):
 		#Start one worker which will create a multiplexer on the other side
-		self.create_worker()
+		self.create_worker(True)
 
 		for i in range(1, Multiplexer.INIT_WORKERS):
 			self.create_worker()
 
 	#Creates a worker with the id being it's index in the list of workers
-	def create_worker(self):
+	def create_worker(self, init=False):
 		ID = len(self.workers)
 
 
