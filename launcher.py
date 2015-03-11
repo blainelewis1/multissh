@@ -15,7 +15,6 @@ import time
 	workers or multiplexers. 
 
 
-
 """
 
 
@@ -27,6 +26,9 @@ def main():
 	try:
 		obj.poll()
 	except Exception as e:
+
+		#This is here for debugging purposes
+
 		#Log.log(e)
 		#my_log = open(Log.log_file, 'a')
 		#traceback.print_exc(file=my_log)
@@ -185,6 +187,7 @@ class Launcher:
 #This block will only be run once upon starting
 if __name__ == '__main__':
 	#this block can be used if we are profiling
+	#It would be useful to conglomerate the files
 	#cProfile.run("main()", str(time.time()))
 	
 	main()
