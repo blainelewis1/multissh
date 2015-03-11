@@ -21,6 +21,8 @@ from logger import Log
 """
 
 #TODO: we could remove instances of header.valid and just assume validity
+#TODO: there's actually a bug with large files where we fail to receive the last packet occassionally
+
 
 
 class Multiplexer:
