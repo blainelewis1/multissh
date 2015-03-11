@@ -36,7 +36,7 @@ class Header:
 		if(header_string == None):
 			return
 
-		header_string = header.decode("UTF-8").strip()
+		header_string = header_string.decode("UTF-8").strip()
 
 		tokens = header_string.split(Header.PAIR_DELIMITER)
 

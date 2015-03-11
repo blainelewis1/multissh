@@ -32,6 +32,7 @@ def main():
 		#Log.log(e)
 		#my_log = open(Log.log_file, 'a')
 		#traceback.print_exc(file=my_log)
+
 		obj.cleanup()
 
 	

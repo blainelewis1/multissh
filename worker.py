@@ -22,7 +22,7 @@ from header import Header
 
 
 class Worker:
-	#Constants as to wear to put the named fifo
+	#Constants as to where to put the named fifo
 
 	#TODO: this would be better if it were in the temp folder
 	#as well as given a more unique identifier
