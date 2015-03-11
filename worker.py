@@ -4,7 +4,6 @@ import sys
 import select
 import os
 from header import Header
-from logger import Log
 
 
 #   Record the time between polls and assume it along 
@@ -77,7 +76,6 @@ class Worker:
 	def send_to_opposing(self, header):
 		self.opposing_in.write(header.to_bytes())
 
-		Log.log("Worker Sending: " + str(self.ID))
 
 
 		if header.size != 0:
@@ -89,8 +87,6 @@ class Worker:
 	def send_to_multiplexer(self, header):
 
 		self.multiplexer_in.write(header.to_bytes())
-
-		Log.log("Worker receiving: " + str(self.ID))
 
 		if header.size != 0:
 			data = self.opposing_out.read(header.size)
