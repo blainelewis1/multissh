@@ -1,4 +1,8 @@
 
+"""
+	Simple class to log to a log file
+"""
+
 class Log:
 
 	log_file = "/home/blaine1/C496/log.txt"
