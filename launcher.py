@@ -42,16 +42,17 @@ class Launcher:
 
 
 	#The different argumets the application can take
-	REMOTE = "--remote"
-	WORKER = "--worker"
-	ID_STRING = "-id"
-	INIT = "--init"
-	USER = "-l"
-	REMOTE_IP = "--host"
-	RSYNC_ARGS = "--rsync"
+	REMOTE_FLAG = "--remote"
+	WORKER_FLAG = "--worker"
+	ID_FLAG = "-id"
+	INIT_FLAG = "--init"
+	USER_FLAG = "-l"
 
 
-	#A launcher can be constructed with either 
+	#A launcher can be constructed with either command line args or another launcher
+	#If it uses args then it applies them
+	#If it uses a launch it takes required fields like
+	#Ths remote ip and 
 	def __init__(self, args=None,launch=None):
 		self.remote = False
 		self.worker = False
@@ -60,7 +61,7 @@ class Launcher:
 		if launch:
 			self.user_val = launch.user_val
 			self.remote_ip_val = launch.remote_ip_val
-			self.rsync_args_val = launch.rsync_args_val
+			self.target_args = launch.target_args
 
 		elif args:
 			self.apply_args(args)
@@ -70,19 +71,19 @@ class Launcher:
 	#To this instance of launcher
 
 	def apply_args(self, args):
-		self.remote = Launcher.REMOTE in args
-		self.worker = Launcher.WORKER in  args
-		self.init = Launcher.INIT in args
+		self.remote = Launcher.REMOTE_FLAG in args
+		self.worker = Launcher.WORKER_FLAG in  args
+		self.init = Launcher.INIT_FLAG in args
 
 		
 		#TODO: This is a fragile way to take arguments..
-		self.remote_ip_val = args[args.index(Launcher.USER) + 2]
-		self.rsync_args_val = args[args.index(Launcher.USER) + 3:]		
-		self.user_val = args[args.index(Launcher.USER) + 1]
+		self.remote_ip_val = args[args.index(Launcher.USER_FLAG) + 2]
+		self.target_args = args[args.index(Launcher.USER_FLAG) + 3:]		
+		self.user_val = args[args.index(Launcher.USER_FLAG) + 1]
 
 
-		if(Launcher.ID_STRING in args):
-			self.ID = int(args[args.index(Launcher.ID_STRING) + 1])
+		if(Launcher.ID_FLAG in args):
+			self.ID = int(args[args.index(Launcher.ID_FLAG) + 1])
 
 
 	#This function takes the paramaters parserd from the command line
@@ -119,7 +120,7 @@ class Launcher:
 	#This creates the target for example rysnc or ls on the remote side
 	def open_remote_target(self):
 		
-		target = subprocess.Popen(shlex.split(" ".join(self.rsync_args_val)), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+		target = subprocess.Popen(shlex.split(" ".join(self.target_args)), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
 		return (target.stdout, target.stdin)
 
@@ -129,7 +130,7 @@ class Launcher:
 	#It returns the stdout and stdin to the new worker
 	def execute_remote_worker(self):
 		args = "ssh " + self.remote_ip_val 
-		args += " " + self.USER +" " + self.user_val 
+		args += " " + self.USER_FLAG +" " + self.user_val 
 		args += " " + self.construct_args(True)
 		
 		worker = subprocess.Popen(shlex.split(args), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -142,15 +143,15 @@ class Launcher:
 	def construct_args(self, remote=False):
 		args = Launcher.EXECUTABLE_PATH
 		if self.init:
-			args += " " + Launcher.INIT
+			args += " " + Launcher.INIT_FLAG
 		if self.worker: 
-			args += " " + Launcher.WORKER + " " + Launcher.ID_STRING + " " + str(self.ID)
+			args += " " + Launcher.WORKER_FLAG + " " + Launcher.ID_FLAG + " " + str(self.ID)
 		if self.remote or remote:
-			args += " " + Launcher.REMOTE
+			args += " " + Launcher.REMOTE_FLAG
 		
-		args += " " + Launcher.USER + " " + str(self.user_val)
+		args += " " + Launcher.USER_FLAG + " " + str(self.user_val)
 		args += " " + str(self.remote_ip_val)
-		args += " " + " ".join(self.rsync_args_val)
+		args += " " + " ".join(self.target_args)
 
 		return args
 
@@ -159,13 +160,13 @@ class Launcher:
 	#We manually construct it's args
 	def execute_remote_multiplexer(self):
 		args = Launcher.EXECUTABLE_PATH + " " 
-		args = Launcher.REMOTE + " " 
-		args += Launcher.ID_STRING + " "  
+		args += Launcher.REMOTE_FLAG + " " 
+		args += Launcher.ID_FLAG + " "  
 		args += str(self.ID) + " "
 		
-		args +=  Launcher.USER + " " + str(self.user_val) + " "
+		args +=  Launcher.USER_FLAG + " " + str(self.user_val) + " "
 		args +=  str(self.remote_ip_val) + " "
-		args += " ".join(self.rsync_args_val)
+		args += " ".join(self.target_args)
 
 		subprocess.Popen(shlex.split(args))
 
