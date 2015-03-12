@@ -1,3 +1,20 @@
+"""
+This file is part of multissh.
+
+multissh is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+multissh is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with multissh.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import select
 import os
 import fcntl
@@ -63,7 +80,7 @@ class Multiplexer:
 
 		#We don't want to block when reading or writing from the target
 		fl = fcntl.fcntl(target_out, fcntl.F_GETFL)
-		fcntl.fcntl(target_out, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+		#fcntl.fcntl(target_out, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
 		fl = fcntl.fcntl(target_in, fcntl.F_GETFL)
 		fcntl.fcntl(target_in, fcntl.F_SETFL, fl | os.O_NONBLOCK)

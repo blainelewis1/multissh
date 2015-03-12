@@ -1,3 +1,22 @@
+"""
+This file is part of multissh.
+
+multissh is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+multissh is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with multissh.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
+
 import sys
 import select
 import os
@@ -28,8 +47,8 @@ class Worker:
 	#TODO: this would be better if it were in the temp folder
 	#as well as given a more unique identifier
 
-	WRITE_PATH = "/home/blaine1/C496/WRITE_"
-	READ_PATH = "/home/blaine1/C496/READ_"
+	WRITE_PATH = "/tmp/WRITE_"
+	READ_PATH = "/tmp/READ_"
 	
 
 	#Methods to get these paths for a specific ID
@@ -149,7 +168,7 @@ class Worker:
 						header = self.handle_header(self.multiplexer_out.readline())
 						if header:
 							self.send_to_opposing(header)
-							
+
 					elif(event & (select.POLLHUP | select.POLLERR)):
 						self.delete_fifos()
 						sys.exit(0)

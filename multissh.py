@@ -1,8 +1,5 @@
-#!/usr/bin/python2
-
-"""
-	This file is used to run experiments
-"""	
+#!/usr/bin/python2 -u
+#Please note -u, this opens stdin/stdout in binary mode
 
 """
 This file is part of multissh.
@@ -21,32 +18,33 @@ You should have received a copy of the GNU General Public License
 along with multissh.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
-import time
-import subprocess
-import shlex
-
-RUNS = 10
-
-results = open("rsync_3_workers.out", "a")
-
-command = "rsync -a blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.blob"
-command = 'rsync -a rsh="/home/blaine1/assignment2/launcher.py" blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.blob'
-args = shlex.split(command)
-
-cleanup = "rm -f /dev/shm/1g.blob"
-cleanup_args = shlex.split(cleanup)
-
-for i in range(RUNS):
-
-	start = time.time()
-
-	subprocess.call(args)
-
-	end = time.time()
-
-	results.write(str(end-start) + "\n")
-
-	subprocess.call(cleanup_args)
+from launcher import Launcher
+import sys
 
 
+def main():
+
+	launcher = Launcher(sys.argv)
+	obj = launcher.launch()
+	
+	try:
+		obj.poll()
+	except Exception as e:
+
+		#This is here for debugging purposes
+
+		Log.log(e)
+		my_log = open(Log.log_file, 'a')
+		traceback.print_exc(file=my_log)
+
+		obj.cleanup()
+
+	
+
+#This block will only be run once upon starting
+if __name__ == '__main__':
+	#this block can be used if we are profiling
+	#It would be useful to conglomerate the files
+	#cProfile.run("main()", str(time.time()))
+	
+	main()
