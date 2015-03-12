@@ -47,8 +47,7 @@ ls_ssh_filename = "ssh_ls.out"
 ls_3_workers_command = "./multissh.py -l blaine1 cold06 ls"
 ls_3_workers_filename = "3_workers_ls.out"
 
-test_command(ls_ssh_filename, ls_ssh_command)
-test_command(ls_3_workers_filename, ls_3_workers_command)
+
 
 
 
@@ -70,3 +69,7 @@ def test_command(file_name, command):
 		results.write(str(end-start) + "\n")
 
 		#subprocess.call(cleanup_args)
+
+
+test_command(ls_ssh_filename, ls_ssh_command)
+test_command(ls_3_workers_filename, ls_3_workers_command)
