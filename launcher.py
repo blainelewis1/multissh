@@ -37,7 +37,7 @@ from logger import Log
 class Launcher:
 	
 	#A path to the application
-	EXECUTABLE_PATH = "/home/blaine1/assignment2/multissh.py"
+	EXECUTABLE_PATH = "/home/blaine1/multissh/multissh.py"
 
 
 	#The different argumets the application can take
