@@ -1,10 +1,6 @@
 #!/usr/bin/python2
 
 """
-	This file is used to run experiments
-"""	
-
-"""
 This file is part of multissh.
 
 multissh is free software: you can redistribute it and/or modify
@@ -22,31 +18,55 @@ along with multissh.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+"""
+	This file was used to run experiments
+
+	Examples: baseline rsync vs our version
+	baseline ssh with ls vs ours
+"""	
+
+
 import time
 import subprocess
 import shlex
 
 RUNS = 10
 
-results = open("rsync_3_workers.out", "a")
 
-command = "rsync -a blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.blob"
-command = 'rsync -a rsh="/home/blaine1/assignment2/launcher.py" blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.blob'
-args = shlex.split(command)
+baseline_rsync_command = "rsync -a blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.blob"
+baseline_rsync_filename = "rsync_baseline.out"
 
-cleanup = "rm -f /dev/shm/1g.blob"
-cleanup_args = shlex.split(cleanup)
-
-for i in range(RUNS):
-
-	start = time.time()
-
-	subprocess.call(args)
-
-	end = time.time()
-
-	results.write(str(end-start) + "\n")
-
-	subprocess.call(cleanup_args)
+rsync_3_workers_command = 'rsync -a rsh="/home/blaine1/assignment2/launcher.py" blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.blob'
+baseline_rsync_filename = "rsync_3_workers.out"
 
 
+
+ls_ssh_command = "ssh -l blaine1 cold06 ls"
+ls_ssh_filename = "ssh_ls.out"
+
+ls_3_workers_command = "./multissh.py -l blaine1 cold06 ls"
+ls_3_workers_filename = "3_workers_ls.out"
+
+test_command(ls_ssh_filename, ls_ssh_command)
+test_command(ls_3_workers_filename, ls_3_workers_command)
+
+
+
+def test_command(file_name, command):
+	results = open(file_name, "a")
+	args = shlex.split(command)
+
+	#cleanup = "rm -f /dev/shm/1g.blob"
+	#cleanup_args = shlex.split(cleanup)
+
+	for i in range(RUNS):
+
+		start = time.time()
+
+		subprocess.call(args)
+
+		end = time.time()
+
+		results.write(str(end-start) + "\n")
+
+		#subprocess.call(cleanup_args)
