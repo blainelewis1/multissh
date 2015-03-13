@@ -19,6 +19,8 @@ along with multissh.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from launcher import Launcher
+from logger import Log
+import traceback
 import sys
 
 
@@ -27,17 +29,21 @@ def main():
 	launcher = Launcher(sys.argv)
 	obj = launcher.launch()
 	
+	Log.log(sys.argv)
+
 	try:
 		obj.poll()
-	except Exception as e:
+	except BaseException as e:
 
 		#This is here for debugging purposes
-
-		Log.log(e)
-		my_log = open(Log.log_file, 'a')
-		traceback.print_exc(file=my_log)
+		if isinstance(e, Exception):
+			Log.log(e)
+			my_log = open(Log.log_file, 'a')
+			traceback.print_exc(file=my_log)
 
 		obj.cleanup()
+
+		sys.exit(0)
 
 	
 

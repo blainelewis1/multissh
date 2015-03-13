@@ -40,14 +40,11 @@ rsync_3_workers_command = 'rsync -a rsh="/home/blaine1/assignment2/launcher.py" 
 baseline_rsync_filename = "rsync_3_workers.out"
 
 
-
 ls_ssh_command = "ssh -l blaine1 cold06 ls"
 ls_ssh_filename = "ssh_ls.out"
 
 ls_3_workers_command = "./multissh.py -l blaine1 cold06 ls"
 ls_3_workers_filename = "3_workers_ls.out"
-
-
 
 
 

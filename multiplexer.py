@@ -46,7 +46,7 @@ class Multiplexer:
 	#These paramaters control the maximum send size as well as
 	#The number of streams to use
 	INIT_WORKERS = 3
-	MAX_READ_SIZE = 4096
+	MAX_READ_SIZE = 2048
 
 
 	#We initiate a ton of member variables
@@ -80,7 +80,7 @@ class Multiplexer:
 
 		#We don't want to block when reading or writing from the target
 		fl = fcntl.fcntl(target_out, fcntl.F_GETFL)
-		#fcntl.fcntl(target_out, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+		fcntl.fcntl(target_out, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
 		fl = fcntl.fcntl(target_in, fcntl.F_GETFL)
 		fcntl.fcntl(target_in, fcntl.F_SETFL, fl | os.O_NONBLOCK)
@@ -135,6 +135,12 @@ class Multiplexer:
 		worker_in = open(write_path, "wb")
 
 
+		fl = fcntl.fcntl(worker_in, fcntl.F_GETFL)
+		fcntl.fcntl(worker_in, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+		fl = fcntl.fcntl(worker_out, fcntl.F_GETFL)
+		fcntl.fcntl(worker_out, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
 		self.poller.register(worker_out)
 		self.workers.append((worker_in, worker_out))
 
@@ -144,8 +150,13 @@ class Multiplexer:
 	#and the target until the target or a worker closes in which
 	#case it will exit
 	def poll(self):
-	
+		self.target_open = True	
+
+
 		while(True):
+
+			if len(self.workers) == 0 and not self.received_packets:
+				sys.exit(0)
 
 			vals = self.poller.poll()
 
@@ -159,7 +170,12 @@ class Multiplexer:
 							self.send(data)
 
 					elif event & (select.POLLHUP | select.POLLERR):
-						sys.exit(0)
+						self.poller.unregister(self.target_out)
+						self.target_open = False
+
+						if not self.received_packets:
+
+							sys.exit(0)
 
 				elif fd == self.target_in.fileno():
 					self.attempt_send_to_target()
@@ -167,16 +183,18 @@ class Multiplexer:
 				else:
 					#This is expensive O(n^2), could use a map instead, but with 5 workers
 					#It's really not worth it
-					for i in range(len(self.workers)):
-						if self.workers[i][1].fileno() == fd:
+					for worker in self.workers:
+						if worker[1].fileno() == fd:
 
 							if event & select.POLLIN:
-								header = self.handle_header(self.workers[i][1].readline())
+								#header = self.handle_header(worker[1].readline())
+								header = self.handle_header(worker[1].read(Header.HEADER_SIZE))
 								if header:
-									self.receive(i, header)
+									self.receive(worker[1], header)
 
 							else:
-								sys.exit(0)	
+								self.poller.unregister(worker[1])
+								self.workers.remove(worker)
 
 	#Cleaup all of our resources
 	def cleanup(self):
@@ -187,21 +205,34 @@ class Multiplexer:
 	#Chooses a worker to send the given data along with a header and then sends it
 	def send(self, data):
 
-		worker = self.workers[self.send_index][0]
-
 		header = Header()
 		header.size = len(data)
 		header.sequence_number = self.send_sequence
 
-		worker.write(header.to_bytes())
-		worker.write(data)
-		worker.flush()
+		data = header.to_bytes() + data
 
-		#Increment the sequence number and the send_index to send along another worker
-		self.send_index = (1 + self.send_index) % len(self.workers)
+		Log.log(data)
+
+		while True:
+
+			worker = self.workers[self.send_index][0]
+
+			#Increment the sequence number and the send_index to send along another worker
+			self.send_index = (1 + self.send_index) % len(self.workers)
+
+			try:
+
+				worker.write(data)
+				worker.flush()
+
+				break
+			except IOError as e:
+				if e.errno == 11:
+					pass
+				else:
+					raise e
+
 		self.send_sequence = self.send_sequence + 1
-
-
 
 	#Given text it converts it to a readable header and returns it or None
 	#In case the header was invalid
@@ -223,12 +254,12 @@ class Multiplexer:
 
 	#Given a worker and a header we receive the data from the worker, then try to send 
 	#it to the target
-	def receive(self, worker_id, header):	
-		worker = self.workers[worker_id][1]
-
+	def receive(self, worker, header):	
 		data = worker.read(header.size)
 
 		self.received_packets[header.sequence_number] = data
+
+
 
 		self.attempt_send_to_target()
 
@@ -251,20 +282,28 @@ class Multiplexer:
 
 			if data:
 				try:
+
 					self.target_in.write(data)
+					self.target_in.flush()
+					del self.received_packets[self.receive_sequence]
+
+									
 				except IOError as e:
 					if e.errno == 11:
 						self.poller.register(self.target_in, select.POLLOUT)
 						return
+					else:
+						raise e
 
-				self.target_in.flush()
-				del self.received_packets[self.receive_sequence]
 
 			else:
 				try:
+					if not self.target_open:
+						sys.exit(0)
 					self.poller.unregister(self.target_in)
 				except KeyError: 
 					pass
 				break
 
 			self.receive_sequence += 1
+

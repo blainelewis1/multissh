@@ -20,7 +20,9 @@ along with multissh.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import select
 import os
+import fcntl
 
+from logger import Log
 from header import Header
 
 
@@ -71,7 +73,22 @@ class Worker:
 		self.opposing_out = opposing_out
 		self.opposing_in = opposing_in
 
+		self.opposing_write_queue = []
+		self.multiplexer_write_queue = []
+
+		fl = fcntl.fcntl(opposing_out, fcntl.F_GETFL)
+		#fcntl.fcntl(opposing_out, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+		fl = fcntl.fcntl(opposing_in, fcntl.F_GETFL)
+		fcntl.fcntl(opposing_in, fcntl.F_SETFL, fl | os.O_NONBLOCK)		
+
+		self.poller = select.poll()		
+
+		self.poller.register(self.opposing_out, select.POLLIN)
+
 		self.open_fifos()
+
+
 
 	#This method opens the named pipes in order to communicate with the
 	#multiplexer
@@ -104,6 +121,14 @@ class Worker:
 		self.multiplexer_in = open(write_path, "wb")
 		self.multiplexer_out = open(read_path, "rb")
 
+		fl = fcntl.fcntl(self.multiplexer_in, fcntl.F_GETFL)
+		fcntl.fcntl(self.multiplexer_in, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+		fl = fcntl.fcntl(self.multiplexer_out, fcntl.F_GETFL)
+		#fcntl.fcntl(self.multiplexer_out, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+		self.poller.register(self.multiplexer_out, select.POLLIN)
+
 	#Removes the fifos on delete
 	def delete_fifos(self):
 		write_path = Worker.get_write_path(self.ID)
@@ -118,26 +143,87 @@ class Worker:
 		except OSError:
 			pass
 
-	#Reads from the multiplexer and sends to the opposing worker
-	def send_to_opposing(self, header):
-		self.opposing_in.write(header.to_bytes())
+
+	def add_to_opposing_write_queue(self, header):
+
+		data = header.to_bytes()
+
 
 		if header.size != 0:
-			data = self.multiplexer_out.read(header.size)
-			self.opposing_in.write(data)
-			
-		self.opposing_in.flush()
+			data += self.multiplexer_out.read(header.size)
+
+		Log.log(data)
+
+		self.opposing_write_queue.append(data)
+		self.write_opposing()
+
+	def write_opposing(self):
+
+		while(len(self.opposing_write_queue) > 0):
+			try:
+
+				self.opposing_in.write(self.opposing_write_queue[0])
+				self.opposing_in.flush()
+				del self.opposing_write_queue[0]
+
+			except IOError as e:
+				if e.errno == 11:
+					self.poller.register(self.opposing_in, select.POLLOUT)
+					return
+				else:
+					raise e
+
+
+		try:
+			if not self.multi_open:
+				self.delete_fifos()
+				sys.exit(0)
+
+			self.poller.unregister(self.opposing_in)
+		except KeyError:
+			pass
 
 	#Reads from the opposing worker and sends to the multiplexer
-	def send_to_multiplexer(self, header):
+	def add_to_multiplexer_write_queue(self, header):
 
-		self.multiplexer_in.write(header.to_bytes())
+		
+		data = header.to_bytes()
 
 		if header.size != 0:
-			data = self.opposing_out.read(header.size)
-			self.multiplexer_in.write(data)
+			data += self.opposing_out.read(header.size)
 
-		self.multiplexer_in.flush()
+
+		Log.log(data)
+
+		self.multiplexer_write_queue.append(data)
+		self.write_multiplexer()
+
+	def write_multiplexer(self):
+
+		while(len(self.multiplexer_write_queue) > 0):
+			try:
+
+				self.multiplexer_in.write(self.multiplexer_write_queue[0])
+				self.multiplexer_in.flush()
+				del self.multiplexer_write_queue[0]
+
+			except IOError as e:
+				if e.errno == 11:
+					self.poller.register(self.multiplexer_in, select.POLLOUT)
+					return
+				else:
+					raise e
+
+		try:
+
+			if not self.multi_open:
+				self.delete_fifos()
+				sys.exit(0)
+
+			self.poller.unregister(self.multiplexer_in)
+		except KeyError:
+			pass
+		
 
 	#Cleans up all the resources
 	def cleanup(self):
@@ -150,39 +236,48 @@ class Worker:
 	#and the multiplexer until one of them closes in which 
 	#case it will exit
 	def poll(self):
-
-		poll = select.poll()
-		poll.register(self.multiplexer_out, select.POLLIN)
-		poll.register(self.opposing_out, select.POLLIN)
-
+		self.multi_open = True
+		self.opposing_open = True
 
 		while(True):
-
-			vals = poll.poll()
-
+			vals = self.poller.poll()
 
 			for fd, event in vals:
 				if(fd == self.multiplexer_out.fileno()):
 					if(event & select.POLLIN):
 
-						header = self.handle_header(self.multiplexer_out.readline())
+						#header = self.handle_header(self.multiplexer_out.readline())
+						header = self.handle_header(self.multiplexer_out.read(Header.HEADER_SIZE))
 						if header:
-							self.send_to_opposing(header)
+							self.add_to_opposing_write_queue(header)
 
 					elif(event & (select.POLLHUP | select.POLLERR)):
-						self.delete_fifos()
-						sys.exit(0)
+						self.multi_open = False
+						if len(self.opposing_write_queue) == 0:
+							self.delete_fifos()
+							sys.exit(0)
+						self.poller.unregister(self.multiplexer_out)
 
 				elif(fd == self.opposing_out.fileno()):
 					if(event & select.POLLIN):
 
-						header = self.handle_header(self.opposing_out.readline())
+						header = self.handle_header(self.opposing_out.read(Header.HEADER_SIZE))
+						#header = self.handle_header(self.opposing_out.readline())
 						if header:
-							self.send_to_multiplexer(header)
+							self.add_to_multiplexer_write_queue(header)
 
 					elif(event & (select.POLLHUP | select.POLLERR)):
-						self.delete_fifos()
-						sys.exit(0)
+						self.poller.unregister(self.opposing_out)
+						self.opposing_open = False
+						if len(self.multiplexer_write_queue) == 0:
+							self.delete_fifos()
+							sys.exit(0)
+
+				elif fd == self.opposing_in.fileno() and event & select.POLLOUT:
+					self.write_opposing()
+
+				elif fd == self.multiplexer_in.fileno() and event & select.POLLOUT:
+					self.write_multiplexer()
 						
 
 	#Verifies and extracts the header as well as handles special
@@ -194,6 +289,7 @@ class Worker:
 		header = Header(line)
 
 		if(not header.valid):
+
 			return None
 
 		return header

@@ -54,6 +54,7 @@ class Header:
 		if(header_string == None):
 			return
 
+
 		header_string = header_string.decode("UTF-8").strip()
 
 		tokens = header_string.split(Header.PAIR_DELIMITER)
@@ -76,6 +77,8 @@ class Header:
 				pass
 			else:
 				self.valid = False
+				Log.log("yo yo yo im totally invalid")
+				Log.log(str(header_string))
 				return
 
 	#Takes a key value pair and joins them using the delimiter
@@ -100,8 +103,8 @@ class Header:
 		#These lines can be unocmmented in order to "fill" the header
 		#And thereby create constant sized headers
 
-		#string += Header.PAIR_DELIMITER
-		#string += self.join_pair(Header.FILL, "X"*(Header.HEADER_SIZE - len(string)-3))
+		string += Header.PAIR_DELIMITER
+		string += self.join_pair(Header.FILL, "X"*(Header.HEADER_SIZE - len(string)-3))
 		
 		string += "\n"
 

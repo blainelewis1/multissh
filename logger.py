@@ -23,7 +23,7 @@ along with multissh.  If not, see <http://www.gnu.org/licenses/>.
 
 class Log:
 
-	log_file = "/home/blaine1/assignment2/log.txt"
+	log_file = "/home/blaine1/multissh/log.txt"
 
 	@staticmethod
 	def log(msg):
