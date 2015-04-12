@@ -36,7 +36,7 @@ RUNS = 10
 baseline_rsync_command = "rsync -a blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.blob"
 baseline_rsync_filename = "rsync_baseline.out"
 
-rsync_3_workers_command = 'rsync -a rsh="/home/blaine1/assignment2/launcher.py" blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.blob'
+rsync_3_workers_command = 'rsync -a --rsh="/home/blaine1/assignment2/multissh.py" blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.blob'
 rsync_3_workers_filename = "rsync_3_workers.out"
 
 
