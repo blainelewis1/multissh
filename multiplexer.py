@@ -189,8 +189,6 @@ class Multiplexer:
 
 							if event & select.POLLIN:
 
-								Log.log("fd: " + str(worker[1].fileno()) + " we have these: " + str(self.received_packets.keys()))
-
 								header = self.handle_header(worker[1].readline())
 								#header = self.handle_header(worker[1].read(Header.HEADER_SIZE))
 								if header:
@@ -213,11 +211,13 @@ class Multiplexer:
 		header.size = len(data)
 		header.sequence_number = self.send_sequence
 
-		Log.log("Sending: " + str(header.sequence_number))
-
 		data = header.to_bytes() + data
 
 		while True:
+			#TODO: this could be done more elegantly
+			if(len(self.workers) == 0):
+				Log.log("Shutdown multiplexer. No workers found")
+				sys.exit(0)
 
 			worker = self.workers[self.send_index][0]
 
@@ -261,11 +261,8 @@ class Multiplexer:
 	#Given a worker and a header we receive the data from the worker, then try to send 
 	#it to the target
 	def receive(self, worker, header):	
-		Log.log("Received: " + str(header.sequence_number))
-		data = worker.read(header.size)
-		Log.log("Done receiving: " + str(header.sequence_number))
 
-		Log.log("read: "+ str(len(data)) + "/" + str(header.size))
+		data = worker.read(header.size)
 
 		self.received_packets[header.sequence_number] = data
 
@@ -277,8 +274,6 @@ class Multiplexer:
 	#TODO: instrument out of order packets (calls to attempt_send_to_target where if 
 	#data isn't passed a single time)
 	def attempt_send_to_target(self):
-
-		Log.log(self.received_packets.keys())
 		
 		while True:
 
@@ -296,14 +291,12 @@ class Multiplexer:
 					self.target_in.write(data)
 					self.target_in.flush()
 
-					Log.log("Sending: " + str(self.receive_sequence))
-
 					del self.received_packets[self.receive_sequence]
 
 									
 				except IOError as e:
 					if e.errno == 11:
-						Log.log("would block")
+
 						self.poller.register(self.target_in, select.POLLOUT)
 						return
 					else:
@@ -313,7 +306,7 @@ class Multiplexer:
 			else:
 				#TODO: try without the keyerror catch
 				try:
-					Log.log("not found")
+
 					if not self.target_open:
 						Log.log("Shutting down. Target not open")
 						sys.exit(0)

@@ -151,12 +151,8 @@ class Worker:
 
 		data = header.to_bytes()
 
-		Log.log(str(data))
-
 		if header.size != 0:
 			data += self.multiplexer_out.read(header.size)
-
-		Log.log("Worker : " + str(header.sequence_number))
 
 		self.opposing_write_queue.append(data)
 		self.write_opposing()
@@ -195,13 +191,9 @@ class Worker:
 		
 		data = header.to_bytes()
 
-		Log.log(str(data))
-
 		if header.size != 0:
 			data += self.opposing_out.read(header.size)
 
-
-		Log.log("Worker : " + str(header.sequence_number))
 
 		self.multiplexer_write_queue.append(data)
 		self.write_multiplexer()
@@ -218,14 +210,12 @@ class Worker:
 				self.multiplexer_in.flush()
 				del self.multiplexer_write_queue[0]
 			except IOError as e:
-				Log.log("error")
-				
+
 				if e.errno == 11:
 
 					self.poller.register(self.multiplexer_in, select.POLLOUT)
 					return
 				else:
-					Log.log(str(e))
 					raise
 
 		try:
@@ -270,7 +260,6 @@ class Worker:
 						if len(self.opposing_write_queue) == 0:
 
 							Log.log("Shutting down. Pollhup multi none in queue")
-							#self.delete_fifos()
 
 							sys.exit(0)
 						self.poller.unregister(self.multiplexer_out)

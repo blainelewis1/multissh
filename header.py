@@ -54,14 +54,9 @@ class Header:
 		if(header_string == None):
 			return
 
-
-		Log.log(str(header_string))
-
 		header_string = header_string.decode("UTF-8").strip()
 
 		tokens = header_string.split(Header.PAIR_DELIMITER)
-
-		#Log.log(header_string)
 
 		#parse the strings
 		for token in tokens:

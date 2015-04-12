@@ -22,12 +22,15 @@ along with multissh.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 class Log:
-
+	enabled = False
 	log_file = "/home/blaine1/multissh/log.txt"
 
 	@staticmethod
 	def log(msg):
-		f = open(Log.log_file,'a')
-		f.write(str(msg) + "\n")
-		f.flush()
-		f.close()
+
+		if(Log.enabled):
+
+			f = open(Log.log_file,'a')
+			f.write(str(msg) + "\n")
+			f.flush()
+			f.close()
