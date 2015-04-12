@@ -136,10 +136,10 @@ class Multiplexer:
 
 
 		fl = fcntl.fcntl(worker_in, fcntl.F_GETFL)
-		fcntl.fcntl(worker_in, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+		#fcntl.fcntl(worker_in, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
 		fl = fcntl.fcntl(worker_out, fcntl.F_GETFL)
-		fcntl.fcntl(worker_out, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+		#fcntl.fcntl(worker_out, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
 		self.poller.register(worker_out)
 		self.workers.append((worker_in, worker_out))
