@@ -131,8 +131,8 @@ class Multiplexer:
 		#CAUTION this will deadlock as the read or write
 		#side actually blocks until the other end is opened
 		#So it must be the opposite of the worker
-		worker_out = open(read_path, "rb")
-		worker_in = open(write_path, "wb")
+		worker_out = open(read_path, "rb", 0)
+		worker_in = open(write_path, "wb", 0)
 
 
 		fl = fcntl.fcntl(worker_in, fcntl.F_GETFL)
@@ -150,12 +150,13 @@ class Multiplexer:
 	#and the target until the target or a worker closes in which
 	#case it will exit
 	def poll(self):
-		self.target_open = True	
 
+		self.target_open = True	
 
 		while(True):
 
 			if len(self.workers) == 0 and not self.received_packets:
+				Log.log("Shutting down. No workers. No received_packets")
 				sys.exit(0)
 
 			vals = self.poller.poll()
@@ -174,25 +175,28 @@ class Multiplexer:
 						self.target_open = False
 
 						if not self.received_packets:
-
+							Log.log("Shutting down. No received_packets")
 							sys.exit(0)
 
 				elif fd == self.target_in.fileno():
 					self.attempt_send_to_target()
 
 				else:
-					#This is expensive O(n^2), could use a map instead, but with 5 workers
+					#This is expensive O(n^2) when combined with outer loop, could use a map instead, but with 5 workers
 					#It's really not worth it
 					for worker in self.workers:
 						if worker[1].fileno() == fd:
 
 							if event & select.POLLIN:
-								#header = self.handle_header(worker[1].readline())
-								header = self.handle_header(worker[1].read(Header.HEADER_SIZE))
+
+								Log.log("fd: " + str(worker[1].fileno()) + " we have these: " + str(self.received_packets.keys()))
+
+								header = self.handle_header(worker[1].readline())
+								#header = self.handle_header(worker[1].read(Header.HEADER_SIZE))
 								if header:
 									self.receive(worker[1], header)
-
 							else:
+								#TODO: investigate. Is this what I really want to do?
 								self.poller.unregister(worker[1])
 								self.workers.remove(worker)
 
@@ -209,9 +213,9 @@ class Multiplexer:
 		header.size = len(data)
 		header.sequence_number = self.send_sequence
 
-		data = header.to_bytes() + data
+		Log.log("Sending: " + str(header.sequence_number))
 
-		Log.log(data)
+		data = header.to_bytes() + data
 
 		while True:
 
@@ -228,6 +232,7 @@ class Multiplexer:
 				break
 			except IOError as e:
 				if e.errno == 11:
+					#TODO: whut. Why did I do this?
 					pass
 				else:
 					raise e
@@ -238,6 +243,7 @@ class Multiplexer:
 	#In case the header was invalid
 	def handle_header(self, line):
 		if not line:
+			Log.log("Shutting down. Unknown error")
 			sys.exit(0)
 
 		header = Header(line)
@@ -255,11 +261,13 @@ class Multiplexer:
 	#Given a worker and a header we receive the data from the worker, then try to send 
 	#it to the target
 	def receive(self, worker, header):	
+		Log.log("Received: " + str(header.sequence_number))
 		data = worker.read(header.size)
+		Log.log("Done receiving: " + str(header.sequence_number))
+
+		Log.log("read: "+ str(len(data)) + "/" + str(header.size))
 
 		self.received_packets[header.sequence_number] = data
-
-
 
 		self.attempt_send_to_target()
 
@@ -269,6 +277,8 @@ class Multiplexer:
 	#TODO: instrument out of order packets (calls to attempt_send_to_target where if 
 	#data isn't passed a single time)
 	def attempt_send_to_target(self):
+
+		Log.log(self.received_packets.keys())
 		
 		while True:
 
@@ -285,11 +295,15 @@ class Multiplexer:
 
 					self.target_in.write(data)
 					self.target_in.flush()
+
+					Log.log("Sending: " + str(self.receive_sequence))
+
 					del self.received_packets[self.receive_sequence]
 
 									
 				except IOError as e:
 					if e.errno == 11:
+						Log.log("would block")
 						self.poller.register(self.target_in, select.POLLOUT)
 						return
 					else:
@@ -297,8 +311,11 @@ class Multiplexer:
 
 
 			else:
+				#TODO: try without the keyerror catch
 				try:
+					Log.log("not found")
 					if not self.target_open:
+						Log.log("Shutting down. Target not open")
 						sys.exit(0)
 					self.poller.unregister(self.target_in)
 				except KeyError: 
@@ -306,4 +323,11 @@ class Multiplexer:
 				break
 
 			self.receive_sequence += 1
+
+
+
+
+
+
+
 

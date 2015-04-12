@@ -44,7 +44,6 @@ def main():
 		obj.cleanup()
 
 		sys.exit(0)
-
 	
 
 #This block will only be run once upon starting

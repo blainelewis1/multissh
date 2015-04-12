@@ -55,9 +55,13 @@ class Header:
 			return
 
 
+		Log.log(str(header_string))
+
 		header_string = header_string.decode("UTF-8").strip()
 
 		tokens = header_string.split(Header.PAIR_DELIMITER)
+
+		#Log.log(header_string)
 
 		#parse the strings
 		for token in tokens:
@@ -100,11 +104,11 @@ class Header:
 
 		string = Header.PAIR_DELIMITER.join(pairs)
 
-		#These lines can be unocmmented in order to "fill" the header
+		#These lines can be uncommented in order to "fill" the header
 		#And thereby create constant sized headers
 
-		string += Header.PAIR_DELIMITER
-		string += self.join_pair(Header.FILL, "X"*(Header.HEADER_SIZE - len(string)-3))
+		#string += Header.PAIR_DELIMITER
+		#string += self.join_pair(Header.FILL, "X"*(Header.HEADER_SIZE - len(string)-3))
 		
 		string += "\n"
 
@@ -112,4 +116,8 @@ class Header:
 
 	#Converst the header to bytes
 	def to_bytes(self):
-		return bytes(self.to_string())
+		return self.to_string().encode('UTF-8')
+
+
+
+
