@@ -37,7 +37,7 @@ baseline_rsync_command = "rsync -a blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.b
 baseline_rsync_filename = "rsync_baseline.out"
 
 rsync_3_workers_command = 'rsync -a rsh="/home/blaine1/assignment2/launcher.py" blaine1@cold06:/dev/shm/1g.blob /dev/shm/1g.blob'
-baseline_rsync_filename = "rsync_3_workers.out"
+rsync_3_workers_filename = "rsync_3_workers.out"
 
 
 ls_ssh_command = "ssh -l blaine1 cold06 ls"
@@ -52,8 +52,8 @@ def test_command(file_name, command):
 	results = open(file_name, "a")
 	args = shlex.split(command)
 
-	#cleanup = "rm -f /dev/shm/1g.blob"
-	#cleanup_args = shlex.split(cleanup)
+	cleanup = "rm -f /dev/shm/1g.blob"
+	cleanup_args = shlex.split(cleanup)
 
 	for i in range(RUNS):
 
@@ -65,8 +65,12 @@ def test_command(file_name, command):
 
 		results.write(str(end-start) + "\n")
 
-		#subprocess.call(cleanup_args)
+		subprocess.call(cleanup_args)
+
+test_command(baseline_rsync_filename, baseline_rsync_command)
+test_command(rsync_3_workers_filename, rsync_3_workers_command)
+
+#test_command(ls_ssh_filename, ls_ssh_command)
+#test_command(ls_3_workers_filename, ls_3_workers_command)
 
 
-test_command(ls_ssh_filename, ls_ssh_command)
-test_command(ls_3_workers_filename, ls_3_workers_command)
