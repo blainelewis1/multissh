@@ -175,7 +175,6 @@ class Launcher:
 	#To fork off a new process
 	def execute(self):
 
-
 		args = self.construct_args()
 
 		subprocess.Popen(shlex.split(args))

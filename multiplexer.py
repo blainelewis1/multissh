@@ -145,6 +145,7 @@ class Multiplexer:
 		self.workers.append((worker_in, worker_out))
 
 
+
 	#This is essentially a main loop
 	#It will continually read from the workers
 	#and the target until the target or a worker closes in which
@@ -157,6 +158,7 @@ class Multiplexer:
 
 			if len(self.workers) == 0 and not self.received_packets:
 				Log.log("Shutting down. No workers. No received_packets")
+				self.cleanup()
 				sys.exit(0)
 
 			vals = self.poller.poll()
@@ -176,6 +178,7 @@ class Multiplexer:
 
 						if not self.received_packets:
 							Log.log("Shutting down. No received_packets")
+							self.cleanup()
 							sys.exit(0)
 
 				elif fd == self.target_in.fileno():
@@ -203,6 +206,22 @@ class Multiplexer:
 		self.target_in.close()
 		self.target_out.close()
 
+		for i in range(Multiplexer.INIT_WORKERS):
+
+			write_path = worker.Worker.get_write_path(str(i))
+			read_path = worker.Worker.get_read_path(str(i))
+			
+			try:
+				os.unlink(write_path)
+			except OSError:
+				pass
+			try:
+				os.unlink(read_path)
+			except OSError:
+				pass
+
+		
+
 
 	#Chooses a worker to send the given data along with a header and then sends it
 	def send(self, data):
@@ -217,6 +236,7 @@ class Multiplexer:
 			#TODO: this could be done more elegantly
 			if(len(self.workers) == 0):
 				Log.log("Shutdown multiplexer. No workers found")
+				self.cleanup()
 				sys.exit(0)
 
 			worker = self.workers[self.send_index][0]
@@ -244,6 +264,7 @@ class Multiplexer:
 	def handle_header(self, line):
 		if not line:
 			Log.log("Shutting down. Unknown error")
+			self.cleanup()
 			sys.exit(0)
 
 		header = Header(line)
@@ -309,7 +330,9 @@ class Multiplexer:
 
 					if not self.target_open:
 						Log.log("Shutting down. Target not open")
+						self.cleanup()
 						sys.exit(0)
+
 					self.poller.unregister(self.target_in)
 				except KeyError: 
 					pass

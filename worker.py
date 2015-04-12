@@ -151,6 +151,8 @@ class Worker:
 
 		data = header.to_bytes()
 
+		Log.log("Worker: " + str(self.ID) + " sending to opposing " + str(header.sequence_number))
+
 		if header.size != 0:
 			data += self.multiplexer_out.read(header.size)
 

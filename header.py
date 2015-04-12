@@ -43,6 +43,7 @@ class Header:
 	#Passing in a string parses it and fills the fields
 	def __init__(self, header_string=None):
 		#Default fields
+
 		self.size = 0
 		self.sequence_number = -1
 		self.valid = True
