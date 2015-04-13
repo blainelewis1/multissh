@@ -46,7 +46,7 @@ class Multiplexer:
 	#These paramaters control the maximum send size as well as
 	#The number of streams to use
 	INIT_WORKERS = 3
-	MAX_READ_SIZE = 2048
+	MAX_READ_SIZE = 8192
 
 
 	#We initiate a ton of member variables

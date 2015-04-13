@@ -22,7 +22,7 @@ from launcher import Launcher
 from logger import Log
 import traceback
 import sys
-
+import cProfile
 
 def main():
 
@@ -50,6 +50,10 @@ def main():
 if __name__ == '__main__':
 	#this block can be used if we are profiling
 	#It would be useful to conglomerate the files
-	#cProfile.run("main()", str(time.time()))
+	#output = ''
+	#for character in "".join(sys.argv)[36:]:
+	#	if character.isalpha() or character.isdigit():
+	#		output += character
+	#cProfile.run("main()", output)
 	
 	main()
