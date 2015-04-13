@@ -252,8 +252,8 @@ class Worker:
 				if(fd == self.multiplexer_out.fileno()):
 					if(event & select.POLLIN):
 
-						header = self.handle_header(self.multiplexer_out.readline())
-						#header = self.handle_header(self.multiplexer_out.read(Header.HEADER_SIZE))
+						#header = self.handle_header(self.multiplexer_out.readline())
+						header = self.handle_header(self.multiplexer_out.read(Header.HEADER_SIZE))
 						if header:
 							self.add_to_opposing_write_queue(header)
 
@@ -269,8 +269,8 @@ class Worker:
 				elif(fd == self.opposing_out.fileno()):
 					if(event & select.POLLIN):
 
-						#header = self.handle_header(self.opposing_out.read(Header.HEADER_SIZE))
-						header = self.handle_header(self.opposing_out.readline())
+						header = self.handle_header(self.opposing_out.read(Header.HEADER_SIZE))
+						#header = self.handle_header(self.opposing_out.readline())
 						if header:
 							self.add_to_multiplexer_write_queue(header)
 

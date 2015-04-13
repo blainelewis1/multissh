@@ -17,7 +17,7 @@ along with multissh.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from logger import Log
-
+import struct
 
 """
 	Headers allow us to set parameters via an object
@@ -25,7 +25,44 @@ from logger import Log
 	It can then be written as either bytes
 	Or as a string via the given methods
 
+	One thing of note is that we don't consider the case where the sequence_number overflows
+
 """
+
+
+#TODO: benchmark creation of header from string and to string
+#TODO: try using struct.pack and struct.unpack
+
+class Header:
+
+	STRUCT = struct.Struct('ii')
+
+	HEADER_SIZE = STRUCT.size
+
+	def __init__(self, header_string=None):
+		#Default fields
+
+		self.size = 0
+		self.sequence_number = -1
+		self.valid = True
+		self.create = 0
+		self.target = False
+
+
+		#No string provided, default parameters
+		if(header_string == None):
+			return
+
+		self.size, self.sequence_number = Header.STRUCT.unpack(header_string)
+
+	#Converst the header to bytes
+	def to_bytes(self):
+		return Header.STRUCT.pack(self.size, self.sequence_number)
+
+
+
+"""
+
 
 class Header:
 	#Different constants to create the header	
@@ -55,10 +92,13 @@ class Header:
 		if(header_string == None):
 			return
 
+		#TODO: this decode is very expensive
 		header_string = header_string.decode("UTF-8").strip()
 
 		tokens = header_string.split(Header.PAIR_DELIMITER)
 
+
+		#TODO: Could we do this faster, currently O(nm)
 		#parse the strings
 		for token in tokens:
 			key_value_tokens = token.split(Header.KEY_VALUE_DELIMITER)
@@ -81,6 +121,7 @@ class Header:
 				Log.log(str(header_string))
 				return
 
+	#TODO: inline me? functions are expensive
 	#Takes a key value pair and joins them using the delimiter
 	def join_pair(self, key, value):
 		return key + Header.KEY_VALUE_DELIMITER + value
@@ -117,3 +158,4 @@ class Header:
 
 
 
+#"""

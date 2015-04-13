@@ -69,7 +69,7 @@ def test_command(file_name, command):
 
 		subprocess.call(cleanup_args)
 
-test_command(baseline_rsync_filename, baseline_rsync_command)
+#test_command(baseline_rsync_filename, baseline_rsync_command)
 test_command(rsync_3_workers_filename, rsync_3_workers_command)
 
 #test_command(ls_ssh_filename, ls_ssh_command)

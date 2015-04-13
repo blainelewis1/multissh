@@ -192,8 +192,8 @@ class Multiplexer:
 
 							if event & select.POLLIN:
 
-								header = self.handle_header(worker[1].readline())
-								#header = self.handle_header(worker[1].read(Header.HEADER_SIZE))
+								#header = self.handle_header(worker[1].readline())
+								header = self.handle_header(worker[1].read(Header.HEADER_SIZE))
 								if header:
 									self.receive(worker[1], header)
 							else:

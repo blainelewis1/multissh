@@ -22,7 +22,7 @@ along with multissh.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 class Log:
-	enabled = False
+	enabled = True
 	log_file = "/home/blaine1/multissh/log.txt"
 
 	@staticmethod
